@@ -6,7 +6,7 @@
 
 A modern, browser-based serial terminal for UART communication with microcontrollers, embedded devices, and IoT hardware. No installation required—just open in your browser and connect to your serial device.
 
-![pineTERM Screenshot](https://via.placeholder.com/800x400/1a1a2e/00d4ff?text=pineTERM+Interface)
+![pineTERM Screenshot](https://github.com/WeSpeakEnglish/images/blob/main/pineterm.png)
 
 ## ✨ Features
 
