@@ -17,6 +17,7 @@
             min-height: 100vh;
             padding: 20px;
             color: #e0e0e0;
+            padding-bottom: 60px;
         }
 
         .container {
@@ -72,7 +73,7 @@
             font-weight: 500;
         }
 
-        select, input[type="text"], input[type="file"] {
+        select, input[type="text"], input[type="file"], input[type="number"] {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #e0e0e0;
@@ -83,10 +84,16 @@
             transition: all 0.3s ease;
         }
 
-        select:focus, input[type="text"]:focus {
+        select:focus, input[type="text"]:focus, input[type="number"]:focus {
             outline: none;
             border-color: #00d4ff;
             box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        input[type="number"] {
+            min-width: 80px;
+            width: 100px;
+            text-align: center;
         }
 
         button {
@@ -182,7 +189,59 @@
 
         .json-section input[type="text"] {
             flex: 1;
-            min-width: 200px;
+            min-width: 150px;
+        }
+
+        /* Terminal Tabs */
+        .terminal-tabs {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #8892b0;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: #00d4ff;
+        }
+
+        .tab-btn.active {
+            color: #00d4ff;
+            border-bottom-color: #00d4ff;
+        }
+
+        .timing-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+            font-size: 13px;
+            color: #8892b0;
+        }
+
+        .timing-control input[type="checkbox"] {
+            accent-color: #00d4ff;
+            width: 16px;
+            height: 16px;
         }
 
         .terminal-container {
@@ -231,12 +290,17 @@
         }
 
         .terminal-body {
-            height: 250px;
+            height: 300px;
             overflow-y: auto;
             padding: 15px;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 13px;
             line-height: 1.6;
+            display: none;
+        }
+
+        .terminal-body.active {
+            display: block;
         }
 
         .log-entry {
@@ -288,6 +352,7 @@
             align-items: center;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             font-size: 12px;
+            z-index: 100;
         }
 
         .status-indicator {
@@ -358,6 +423,16 @@
             select, input[type="text"] {
                 width: 100%;
             }
+
+            .terminal-tabs {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .timing-control {
+                margin-left: 0;
+                margin-top: 10px;
+            }
         }
     </style>
 <base target="_blank">
@@ -421,7 +496,7 @@
             <div class="panel-title">Send Command</div>
             <div class="send-section">
                 <div class="send-row">
-                    <input type="text" id="hexInput" placeholder="50 51 52 (HEX bytes separated by space)">
+                    <input type="text" id="hexInput" placeholder="50 51 52 (HEX bytes separated by space)" maxlength="200">
                     <button onclick="sendHex()">Send HEX</button>
                 </div>
                 <div class="send-row">
@@ -454,43 +529,37 @@
                     <input type="text" id="jsonFileName" placeholder="Cmd.json" readonly>
                     <button class="secondary" onclick="document.getElementById('jsonFile').click()">Select JSON</button>
                     <input type="file" id="jsonFile" accept=".json" style="display: none;" onchange="handleJsonSelect(this)">
-                    <button onclick="sendJsonCommands()">Send JSON Commands</button>
+                    <button id="sendJsonBtn" onclick="sendJsonCommands()">Send JSON Commands</button>
+                    <button id="stopJsonBtn" class="danger" onclick="stopJsonCommands()" style="display:none;">Stop</button>
                 </div>
             </div>
         </div>
 
-        <!-- HEX View Terminal -->
+        <!-- Combined Terminal Panel -->
         <div class="panel">
-            <div class="terminal-container">
-                <div class="terminal-header">
-                    <span class="terminal-title">HEX VIEW</span>
-                    <div class="terminal-controls">
-                        <button class="secondary" onclick="exportLog('hex')">Export log</button>
-                        <label class="checkbox-group">
-                            <input type="checkbox" id="autoScrollHex" checked>
-                            <span>Auto scroll</span>
-                        </label>
-                        <button class="secondary danger" onclick="clearTerminal('hex')">Clear</button>
-                    </div>
+            <div class="terminal-tabs">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('hex')">HEX VIEW</button>
+                    <button class="tab-btn" onclick="switchTab('ascii')">ASCII VIEW</button>
                 </div>
-                <div class="terminal-body" id="hexTerminal"></div>
+                <div class="timing-control">
+                    <input type="checkbox" id="enableTiming" checked>
+                    <span>Separated less than</span>
+                    <input type="number" id="timingValue" value="5000" min="0" max="1000000" step="1000">
+                    <span>μSec treat like one package</span>
+                </div>
+                <div class="terminal-controls" style="margin-left: auto;">
+                    <button class="secondary" onclick="exportLog()">Export log</button>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="autoScroll" checked>
+                        <span>Auto scroll</span>
+                    </label>
+                    <button class="secondary danger" onclick="clearTerminal()">Clear</button>
+                </div>
             </div>
-        </div>
-
-        <!-- ASCII View Terminal -->
-        <div class="panel">
+            
             <div class="terminal-container">
-                <div class="terminal-header">
-                    <span class="terminal-title">ASCII VIEW</span>
-                    <div class="terminal-controls">
-                        <button class="secondary" onclick="exportLog('ascii')">Export log</button>
-                        <label class="checkbox-group">
-                            <input type="checkbox" id="autoScrollAscii" checked>
-                            <span>Auto scroll</span>
-                        </label>
-                        <button class="secondary danger" onclick="clearTerminal('ascii')">Clear</button>
-                    </div>
-                </div>
+                <div class="terminal-body active" id="hexTerminal"></div>
                 <div class="terminal-body ascii-view" id="asciiTerminal"></div>
             </div>
         </div>
@@ -523,11 +592,103 @@
         let rxBytes = 0;
         let txBytes = 0;
         let jsonCommands = null;
+        let jsonRunning  = false;  // true while a JSON sequence is executing
+        
+        // Timing/buffering variables
+        let receiveBuffer = [];
+        let lastReceiveTime = 0;
+        let bufferTimeout = null;
 
         // Check browser support
         if (!('serial' in navigator)) {
             alert('Web Serial API is not supported in this browser. Please use Chrome, Edge, or Opera.');
         }
+
+        // HEX Input handling - Auto-format and validate
+        const hexInput = document.getElementById('hexInput');
+        
+        hexInput.addEventListener('input', function(e) {
+            const cursorPosition = this.selectionStart;
+            const originalLength = this.value.length;
+            
+            // Remove all non-hex characters and spaces
+            let value = this.value.replace(/[^0-9A-Fa-f\s]/g, '').toUpperCase();
+            
+            // Remove existing spaces
+            value = value.replace(/\s/g, '');
+            
+            // Limit to valid hex pairs (max 100 bytes = 200 chars)
+            if (value.length > 200) {
+                value = value.substring(0, 200);
+            }
+            
+            // Insert space every 2 characters
+            let formatted = '';
+            for (let i = 0; i < value.length; i += 2) {
+                if (i > 0) formatted += ' ';
+                formatted += value.substring(i, i + 2);
+            }
+            
+            this.value = formatted;
+            
+            // Adjust cursor position
+            const newLength = this.value.length;
+            let newCursorPosition = cursorPosition;
+            
+            // If characters were added (space insertion), move cursor accordingly
+            if (newLength > originalLength) {
+                newCursorPosition = cursorPosition + 1;
+            } else if (newLength < originalLength) {
+                // Characters were removed
+                newCursorPosition = cursorPosition - (originalLength - newLength);
+            }
+            
+            // Ensure cursor doesn't go beyond input length
+            newCursorPosition = Math.min(newCursorPosition, this.value.length);
+            this.setSelectionRange(newCursorPosition, newCursorPosition);
+        });
+
+        // Prevent invalid characters on keypress
+        hexInput.addEventListener('keypress', function(e) {
+            const char = String.fromCharCode(e.which);
+            // Allow only hex digits (0-9, A-F, a-f) and control keys
+            if (!/[0-9A-Fa-f]/.test(char) && e.which !== 8 && e.which !== 32 && e.which !== 13) {
+                e.preventDefault();
+            }
+        });
+
+        // Handle paste - clean up pasted content
+        hexInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            
+            // Clean pasted content - keep only hex digits
+            const cleaned = pastedText.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
+            
+            // Format with spaces
+            let formatted = '';
+            for (let i = 0; i < cleaned.length && i < 200; i += 2) {
+                if (i > 0) formatted += ' ';
+                formatted += cleaned.substring(i, i + 2);
+            }
+            
+            // Insert at cursor position
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            const currentValue = this.value.replace(/\s/g, '');
+            const beforeCursor = currentValue.substring(0, start);
+            const afterCursor = currentValue.substring(end);
+            const newValue = beforeCursor + cleaned + afterCursor;
+            
+            // Reformat
+            let finalFormatted = '';
+            for (let i = 0; i < newValue.length && i < 200; i += 2) {
+                if (i > 0) finalFormatted += ' ';
+                finalFormatted += newValue.substring(i, i + 2);
+            }
+            
+            this.value = finalFormatted;
+        });
 
         function getLineEnding() {
             const selected = document.querySelector('input[name="lineEnding"]:checked').value;
@@ -537,6 +698,16 @@
                 case 'cr': return '\r';
                 default: return '';
             }
+        }
+
+        function switchTab(tab) {
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update terminal bodies
+            document.getElementById('hexTerminal').classList.toggle('active', tab === 'hex');
+            document.getElementById('asciiTerminal').classList.toggle('active', tab === 'ascii');
         }
 
         async function toggleConnection() {
@@ -610,10 +781,35 @@
                     const { value, done } = await reader.read();
                     if (done) break;
                     
-                    if (value) {
-                        rxBytes += value.length;
-                        updateStats();
-                        logData(value, 'rx');
+                    if (value && value.length > 0) {
+                        const now = Date.now();
+                        const timingEnabled = document.getElementById('enableTiming').checked;
+                        const timingThreshold = parseInt(document.getElementById('timingValue').value) || 50000;
+                        
+                        if (timingEnabled) {
+                            // Check if this is a new packet or continuation
+                            const timeSinceLast = (now - lastReceiveTime) * 1000; // convert to microseconds
+                            
+                            if (timeSinceLast > timingThreshold && receiveBuffer.length > 0) {
+                                // Flush previous buffer as a complete packet
+                                flushReceiveBuffer();
+                            }
+                            
+                            // Add to buffer
+                            receiveBuffer.push(...value);
+                            lastReceiveTime = now;
+                            
+                            // Set timeout to flush buffer
+                            if (bufferTimeout) clearTimeout(bufferTimeout);
+                            bufferTimeout = setTimeout(() => {
+                                if (receiveBuffer.length > 0) {
+                                    flushReceiveBuffer();
+                                }
+                            }, timingThreshold / 1000 + 10); // Convert μs to ms, add small buffer
+                        } else {
+                            // No timing - log immediately
+                            processReceivedData(value);
+                        }
                     }
                 }
             } catch (err) {
@@ -622,6 +818,20 @@
                     await disconnect();
                 }
             }
+        }
+
+        function flushReceiveBuffer() {
+            if (receiveBuffer.length === 0) return;
+            
+            const data = new Uint8Array(receiveBuffer);
+            processReceivedData(data);
+            receiveBuffer = [];
+        }
+
+        function processReceivedData(data) {
+            rxBytes += data.length;
+            updateStats();
+            logData(data, 'rx');
         }
 
         function logData(data, direction) {
@@ -649,7 +859,7 @@
             const hexTerminal = document.getElementById('hexTerminal');
             hexTerminal.appendChild(hexEntry);
             
-            if (document.getElementById('autoScrollHex').checked) {
+            if (document.getElementById('autoScroll').checked) {
                 hexTerminal.scrollTop = hexTerminal.scrollHeight;
             }
             
@@ -675,7 +885,7 @@
             const asciiTerminal = document.getElementById('asciiTerminal');
             asciiTerminal.appendChild(asciiEntry);
             
-            if (document.getElementById('autoScrollAscii').checked) {
+            if (document.getElementById('autoScroll').checked) {
                 asciiTerminal.scrollTop = asciiTerminal.scrollHeight;
             }
         }
@@ -716,7 +926,7 @@
                 }
                 
                 updateStats();
-                document.getElementById('hexInput').value = '';
+                // Input stays after sending - NOT clearing
             } catch (err) {
                 console.error('Send error:', err);
                 alert('Failed to send: ' + err.message);
@@ -739,7 +949,7 @@
                 txBytes += data.length;
                 updateStats();
                 logData(data, 'tx');
-                document.getElementById('asciiInput').value = '';
+                // Input stays after sending - NOT clearing
             } catch (err) {
                 console.error('Send error:', err);
                 alert('Failed to send: ' + err.message);
@@ -775,26 +985,52 @@
                 return;
             }
             
+            if (jsonRunning) return;
+            jsonRunning = true;
+            document.getElementById('sendJsonBtn').disabled = true;
+            document.getElementById('stopJsonBtn').style.display = '';
+
             try {
                 if (Array.isArray(jsonCommands)) {
                     for (const cmd of jsonCommands) {
+                        if (!jsonRunning) break;
+
                         let data;
+                        let preDelay  = 0;
+                        let postDelay = 100; // default inter-command gap
+                        let times     = 1;   // times: 0=skip, 1=once, N=N times, -1=infinite
+
                         if (typeof cmd === 'string') {
                             data = new TextEncoder().encode(cmd + getLineEnding());
                         } else if (cmd.type === 'hex') {
                             const bytes = cmd.data.split(/\s+/).map(b => parseInt(b, 16));
                             data = new Uint8Array(bytes);
+                            if (typeof cmd.preDelay  === 'number') preDelay  = cmd.preDelay;
+                            if (typeof cmd.postDelay === 'number') postDelay = cmd.postDelay;
+                            if (typeof cmd.times     === 'number') times     = cmd.times;
                         } else {
                             data = new TextEncoder().encode(cmd.data + getLineEnding());
+                            if (typeof cmd.preDelay  === 'number') preDelay  = cmd.preDelay;
+                            if (typeof cmd.postDelay === 'number') postDelay = cmd.postDelay;
+                            if (typeof cmd.times     === 'number') times     = cmd.times;
                         }
-                        
-                        await writer.write(data);
-                        txBytes += data.length;
-                        logData(data, 'tx');
-                        updateStats();
-                        
-                        // Small delay between commands
-                        await new Promise(r => setTimeout(r, 100));
+
+                        if (times === 0) continue; // skip this command
+
+                        const infinite = (times === -1);
+                        let i = 0;
+                        while (jsonRunning && (infinite || i < times)) {
+                            if (preDelay > 0) await new Promise(r => setTimeout(r, preDelay));
+                            if (!jsonRunning) break;
+
+                            await writer.write(data);
+                            txBytes += data.length;
+                            logData(data, 'tx');
+                            updateStats();
+
+                            if (postDelay > 0) await new Promise(r => setTimeout(r, postDelay));
+                            if (!infinite) i++;
+                        }
                     }
                 } else {
                     alert('JSON must be an array of commands');
@@ -802,7 +1038,15 @@
             } catch (err) {
                 console.error('JSON send error:', err);
                 alert('Failed to send JSON commands: ' + err.message);
+            } finally {
+                jsonRunning = false;
+                document.getElementById('sendJsonBtn').disabled = false;
+                document.getElementById('stopJsonBtn').style.display = 'none';
             }
+        }
+
+        function stopJsonCommands() {
+            jsonRunning = false;
         }
 
         function updateStatus(connected) {
@@ -825,12 +1069,14 @@
             document.getElementById('txCount').textContent = `${txBytes} bytes`;
         }
 
-        function clearTerminal(type) {
-            document.getElementById(type + 'Terminal').innerHTML = '';
+        function clearTerminal() {
+            document.getElementById('hexTerminal').innerHTML = '';
+            document.getElementById('asciiTerminal').innerHTML = '';
         }
 
-        function exportLog(type) {
-            const terminal = document.getElementById(type + 'Terminal');
+        function exportLog() {
+            const activeTab = document.getElementById('hexTerminal').classList.contains('active') ? 'hex' : 'ascii';
+            const terminal = document.getElementById(activeTab + 'Terminal');
             const entries = terminal.querySelectorAll('.log-entry');
             let log = '';
             
@@ -845,7 +1091,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `uart-log-${type}-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.txt`;
+            a.download = `uart-log-${activeTab}-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.txt`;
             a.click();
             URL.revokeObjectURL(url);
         }
