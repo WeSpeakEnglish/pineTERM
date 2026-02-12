@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pineTERM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00d4ff;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-title {
+            font-size: 14px;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .connection-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: end;
+            justify-content: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            color: #8892b0;
+            font-weight: 500;
+        }
+
+        select, input[type="text"], input[type="file"] {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 100px;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            border: none;
+            color: #0a0a0a;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        button.secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #ff4757 0%, #cc0033 100%);
+            color: white;
+        }
+
+        button.danger:hover:not(:disabled) {
+            box-shadow: 0 5px 20px rgba(255, 71, 87, 0.4);
+        }
+
+        .send-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .send-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .send-row input[type="text"] {
+            flex: 1;
+        }
+
+        .line-ending {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .radio-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio-group input[type="radio"] {
+            accent-color: #00d4ff;
+        }
+
+        .radio-group label {
+            color: #8892b0;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .json-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .json-section input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .terminal-container {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .terminal-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .terminal-title {
+            font-size: 13px;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .terminal-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            accent-color: #00d4ff;
+        }
+
+        .checkbox-group label {
+            font-size: 12px;
+            color: #8892b0;
+            cursor: pointer;
+        }
+
+        .terminal-body {
+            height: 250px;
+            overflow-y: auto;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .timestamp {
+            color: #666;
+            min-width: 85px;
+        }
+
+        .direction {
+            font-weight: bold;
+            min-width: 20px;
+        }
+
+        .direction.rx {
+            color: #00d4ff;
+        }
+
+        .direction.tx {
+            color: #ff6b6b;
+        }
+
+        .data {
+            color: #e0e0e0;
+            word-break: break-all;
+        }
+
+        .data.hex {
+            color: #a8a8a8;
+        }
+
+        .ascii-view .data {
+            color: #90ee90;
+        }
+
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 12px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff4757;
+            box-shadow: 0 0 10px #ff4757;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.connected {
+            background: #2ed573;
+            box-shadow: 0 0 10px #2ed573;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            color: #8892b0;
+        }
+
+        .stat {
+            display: flex;
+            gap: 5px;
+        }
+
+        .stat-value {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .connection-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .input-group {
+                width: 100%;
+            }
+            
+            select, input[type="text"] {
+                width: 100%;
+            }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <h1>pineTERM v 1.0</h1>
+
+        <!-- Connection Panel -->
+        <div class="panel">
+            <div class="panel-title">Connection Settings</div>
+            <div class="connection-row">
+                <div class="input-group">
+                    <label>Baud rate</label>
+                    <select id="baudRate">
+                        <option value="9600" selected>9600</option>
+                        <option value="19200">19200</option>
+                        <option value="38400">38400</option>
+                        <option value="57600">57600</option>
+                        <option value="115200">115200</option>
+                        <option value="230400">230400</option>
+                        <option value="460800">460800</option>
+                        <option value="921600">921600</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Data bits</label>
+                    <select id="dataBits">
+                        <option value="7">7</option>
+                        <option value="8" selected>8</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Stop bits</label>
+                    <select id="stopBits">
+                        <option value="1" selected>1</option>
+                        <option value="2">2</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Parity</label>
+                    <select id="parity">
+                        <option value="none" selected>None</option>
+                        <option value="even">Even</option>
+                        <option value="odd">Odd</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Flow Control</label>
+                    <select id="flowControl">
+                        <option value="none" selected>None</option>
+                        <option value="hardware">Hardware</option>
+                    </select>
+                </div>
+                <button id="connectBtn" onclick="toggleConnection()">Connect to UART</button>
+            </div>
+        </div>
+
+        <!-- Send Command Panel -->
+        <div class="panel">
+            <div class="panel-title">Send Command</div>
+            <div class="send-section">
+                <div class="send-row">
+                    <input type="text" id="hexInput" placeholder="50 51 52 (HEX bytes separated by space)">
+                    <button onclick="sendHex()">Send HEX</button>
+                </div>
+                <div class="send-row">
+                    <input type="text" id="asciiInput" placeholder="PQR (ASCII text)">
+                    <button onclick="sendAscii()">Send ASCII</button>
+                </div>
+                
+                <div class="line-ending">
+                    <span style="color: #8892b0; font-size: 13px;">At the end:</span>
+                    <label class="radio-group">
+                        <input type="radio" name="lineEnding" value="crlf" checked>
+                        <span>Send CR LF</span>
+                    </label>
+                    <label class="radio-group">
+                        <input type="radio" name="lineEnding" value="lf">
+                        <span>Send LF</span>
+                    </label>
+                    <label class="radio-group">
+                        <input type="radio" name="lineEnding" value="cr">
+                        <span>Send CR</span>
+                    </label>
+                    <label class="radio-group">
+                        <input type="radio" name="lineEnding" value="none">
+                        <span>No ending</span>
+                    </label>
+                </div>
+
+                <div class="json-section">
+                    <span style="color: #8892b0; font-size: 13px;">Send JSON command sequence</span>
+                    <input type="text" id="jsonFileName" placeholder="Cmd.json" readonly>
+                    <button class="secondary" onclick="document.getElementById('jsonFile').click()">Select JSON</button>
+                    <input type="file" id="jsonFile" accept=".json" style="display: none;" onchange="handleJsonSelect(this)">
+                    <button onclick="sendJsonCommands()">Send JSON Commands</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HEX View Terminal -->
+        <div class="panel">
+            <div class="terminal-container">
+                <div class="terminal-header">
+                    <span class="terminal-title">HEX VIEW</span>
+                    <div class="terminal-controls">
+                        <button class="secondary" onclick="exportLog('hex')">Export log</button>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="autoScrollHex" checked>
+                            <span>Auto scroll</span>
+                        </label>
+                        <button class="secondary danger" onclick="clearTerminal('hex')">Clear</button>
+                    </div>
+                </div>
+                <div class="terminal-body" id="hexTerminal"></div>
+            </div>
+        </div>
+
+        <!-- ASCII View Terminal -->
+        <div class="panel">
+            <div class="terminal-container">
+                <div class="terminal-header">
+                    <span class="terminal-title">ASCII VIEW</span>
+                    <div class="terminal-controls">
+                        <button class="secondary" onclick="exportLog('ascii')">Export log</button>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="autoScrollAscii" checked>
+                            <span>Auto scroll</span>
+                        </label>
+                        <button class="secondary danger" onclick="clearTerminal('ascii')">Clear</button>
+                    </div>
+                </div>
+                <div class="terminal-body ascii-view" id="asciiTerminal"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-indicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Disconnected</span>
+        </div>
+        <div class="stats">
+            <div class="stat">
+                <span>RX:</span>
+                <span class="stat-value" id="rxCount">0 bytes</span>
+            </div>
+            <div class="stat">
+                <span>TX:</span>
+                <span class="stat-value" id="txCount">0 bytes</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let port = null;
+        let reader = null;
+        let writer = null;
+        let readLoop = null;
+        let isConnected = false;
+        let rxBytes = 0;
+        let txBytes = 0;
+        let jsonCommands = null;
+
+        // Check browser support
+        if (!('serial' in navigator)) {
+            alert('Web Serial API is not supported in this browser. Please use Chrome, Edge, or Opera.');
+        }
+
+        function getLineEnding() {
+            const selected = document.querySelector('input[name="lineEnding"]:checked').value;
+            switch(selected) {
+                case 'crlf': return '\r\n';
+                case 'lf': return '\n';
+                case 'cr': return '\r';
+                default: return '';
+            }
+        }
+
+        async function toggleConnection() {
+            const btn = document.getElementById('connectBtn');
+            
+            if (!isConnected) {
+                try {
+                    port = await navigator.serial.requestPort();
+                    
+                    const options = {
+                        baudRate: parseInt(document.getElementById('baudRate').value),
+                        dataBits: parseInt(document.getElementById('dataBits').value),
+                        stopBits: parseInt(document.getElementById('stopBits').value),
+                        parity: document.getElementById('parity').value,
+                        flowControl: document.getElementById('flowControl').value
+                    };
+
+                    await port.open(options);
+                    
+                    writer = port.writable.getWriter();
+                    reader = port.readable.getReader();
+                    
+                    isConnected = true;
+                    btn.textContent = 'Disconnect';
+                    btn.classList.add('danger');
+                    updateStatus(true);
+                    
+                    readLoop = readData();
+                    
+                    // Disable settings while connected
+                    document.querySelectorAll('.connection-row select').forEach(s => s.disabled = true);
+                    
+                } catch (err) {
+                    console.error('Connection error:', err);
+                    alert('Failed to connect: ' + err.message);
+                }
+            } else {
+                await disconnect();
+            }
+        }
+
+        async function disconnect() {
+            isConnected = false;
+            updateStatus(false);
+            
+            if (reader) {
+                await reader.cancel();
+                reader = null;
+            }
+            
+            if (writer) {
+                await writer.releaseLock();
+                writer = null;
+            }
+            
+            if (port) {
+                await port.close();
+                port = null;
+            }
+            
+            document.getElementById('connectBtn').textContent = 'Connect to UART';
+            document.getElementById('connectBtn').classList.remove('danger');
+            
+            // Re-enable settings
+            document.querySelectorAll('.connection-row select').forEach(s => s.disabled = false);
+        }
+
+        async function readData() {
+            try {
+                while (isConnected) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    
+                    if (value) {
+                        rxBytes += value.length;
+                        updateStats();
+                        logData(value, 'rx');
+                    }
+                }
+            } catch (err) {
+                if (isConnected) {
+                    console.error('Read error:', err);
+                    await disconnect();
+                }
+            }
+        }
+
+        function logData(data, direction) {
+            const timestamp = new Date().toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                fractionalSecondDigits: 3 
+            });
+            
+            // HEX view
+            const hexStr = Array.from(data)
+                .map(b => b.toString(16).padStart(2, '0').toUpperCase())
+                .join(' ');
+            
+            const hexEntry = document.createElement('div');
+            hexEntry.className = 'log-entry';
+            hexEntry.innerHTML = `
+                <span class="timestamp">${timestamp}</span>
+                <span class="direction ${direction}">${direction.toUpperCase()}</span>
+                <span class="data hex">${hexStr}</span>
+            `;
+            
+            const hexTerminal = document.getElementById('hexTerminal');
+            hexTerminal.appendChild(hexEntry);
+            
+            if (document.getElementById('autoScrollHex').checked) {
+                hexTerminal.scrollTop = hexTerminal.scrollHeight;
+            }
+            
+            // ASCII view
+            const asciiStr = Array.from(data)
+                .map(b => {
+                    if (b >= 32 && b <= 126) return String.fromCharCode(b);
+                    if (b === 10) return '␊';
+                    if (b === 13) return '␍';
+                    if (b === 9) return '␉';
+                    return '·';
+                })
+                .join('');
+            
+            const asciiEntry = document.createElement('div');
+            asciiEntry.className = 'log-entry';
+            asciiEntry.innerHTML = `
+                <span class="timestamp">${timestamp}</span>
+                <span class="direction ${direction}">${direction.toUpperCase()}</span>
+                <span class="data">${asciiStr}</span>
+            `;
+            
+            const asciiTerminal = document.getElementById('asciiTerminal');
+            asciiTerminal.appendChild(asciiEntry);
+            
+            if (document.getElementById('autoScrollAscii').checked) {
+                asciiTerminal.scrollTop = asciiTerminal.scrollHeight;
+            }
+        }
+
+        async function sendHex() {
+            if (!isConnected) {
+                alert('Please connect to UART first');
+                return;
+            }
+            
+            const input = document.getElementById('hexInput').value.trim();
+            if (!input) return;
+            
+            try {
+                const bytes = input.split(/\s+/)
+                    .map(b => parseInt(b, 16))
+                    .filter(b => !isNaN(b) && b >= 0 && b <= 255);
+                
+                if (bytes.length === 0) {
+                    alert('Invalid HEX input');
+                    return;
+                }
+                
+                const data = new Uint8Array(bytes);
+                const ending = getLineEnding();
+                if (ending) {
+                    const endingBytes = new TextEncoder().encode(ending);
+                    const combined = new Uint8Array(data.length + endingBytes.length);
+                    combined.set(data);
+                    combined.set(endingBytes, data.length);
+                    await writer.write(combined);
+                    txBytes += combined.length;
+                    logData(combined, 'tx');
+                } else {
+                    await writer.write(data);
+                    txBytes += data.length;
+                    logData(data, 'tx');
+                }
+                
+                updateStats();
+                document.getElementById('hexInput').value = '';
+            } catch (err) {
+                console.error('Send error:', err);
+                alert('Failed to send: ' + err.message);
+            }
+        }
+
+        async function sendAscii() {
+            if (!isConnected) {
+                alert('Please connect to UART first');
+                return;
+            }
+            
+            const input = document.getElementById('asciiInput').value;
+            const ending = getLineEnding();
+            const text = input + ending;
+            
+            try {
+                const data = new TextEncoder().encode(text);
+                await writer.write(data);
+                txBytes += data.length;
+                updateStats();
+                logData(data, 'tx');
+                document.getElementById('asciiInput').value = '';
+            } catch (err) {
+                console.error('Send error:', err);
+                alert('Failed to send: ' + err.message);
+            }
+        }
+
+        function handleJsonSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                document.getElementById('jsonFileName').value = file.name;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        jsonCommands = JSON.parse(e.target.result);
+                        console.log('JSON commands loaded:', jsonCommands);
+                    } catch (err) {
+                        alert('Invalid JSON file');
+                        jsonCommands = null;
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        async function sendJsonCommands() {
+            if (!isConnected) {
+                alert('Please connect to UART first');
+                return;
+            }
+            
+            if (!jsonCommands) {
+                alert('Please select a valid JSON file first');
+                return;
+            }
+            
+            try {
+                if (Array.isArray(jsonCommands)) {
+                    for (const cmd of jsonCommands) {
+                        let data;
+                        if (typeof cmd === 'string') {
+                            data = new TextEncoder().encode(cmd + getLineEnding());
+                        } else if (cmd.type === 'hex') {
+                            const bytes = cmd.data.split(/\s+/).map(b => parseInt(b, 16));
+                            data = new Uint8Array(bytes);
+                        } else {
+                            data = new TextEncoder().encode(cmd.data + getLineEnding());
+                        }
+                        
+                        await writer.write(data);
+                        txBytes += data.length;
+                        logData(data, 'tx');
+                        updateStats();
+                        
+                        // Small delay between commands
+                        await new Promise(r => setTimeout(r, 100));
+                    }
+                } else {
+                    alert('JSON must be an array of commands');
+                }
+            } catch (err) {
+                console.error('JSON send error:', err);
+                alert('Failed to send JSON commands: ' + err.message);
+            }
+        }
+
+        function updateStatus(connected) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            
+            if (connected) {
+                dot.classList.add('connected');
+                text.textContent = `Connected (${document.getElementById('baudRate').value} baud)`;
+                text.style.color = '#2ed573';
+            } else {
+                dot.classList.remove('connected');
+                text.textContent = 'Disconnected';
+                text.style.color = '#e0e0e0';
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('rxCount').textContent = `${rxBytes} bytes`;
+            document.getElementById('txCount').textContent = `${txBytes} bytes`;
+        }
+
+        function clearTerminal(type) {
+            document.getElementById(type + 'Terminal').innerHTML = '';
+        }
+
+        function exportLog(type) {
+            const terminal = document.getElementById(type + 'Terminal');
+            const entries = terminal.querySelectorAll('.log-entry');
+            let log = '';
+            
+            entries.forEach(entry => {
+                const timestamp = entry.querySelector('.timestamp').textContent;
+                const direction = entry.querySelector('.direction').textContent;
+                const data = entry.querySelector('.data').textContent;
+                log += `[${timestamp}] ${direction}: ${data}\n`;
+            });
+            
+            const blob = new Blob([log], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `uart-log-${type}-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Handle Enter key in inputs
+        document.getElementById('hexInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendHex();
+        });
+        
+        document.getElementById('asciiInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendAscii();
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (isConnected) disconnect();
+        });
+    </script>
+</body>
+</html>
