@@ -386,10 +386,62 @@
 <body>
     <div class="container">
         <div class="header-row">
-            <h1>pineTERM v 1.0</h1>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 100" width="480" height="100" style="max-width:100%;height:auto;">
+              <defs>
+                <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#0d1117"/>
+                  <stop offset="100%" style="stop-color:#101820"/>
+                </linearGradient>
+                <filter id="tg" x="-10%" y="-40%" width="120%" height="180%">
+                  <feGaussianBlur stdDeviation="4" result="b"/>
+                  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <pattern id="scan" x="0" y="0" width="1" height="3" patternUnits="userSpaceOnUse">
+                  <rect x="0" y="0" width="1" height="1.5" fill="rgba(0,255,80,0.018)"/>
+                </pattern>
+              </defs>
+              <rect width="480" height="100" rx="12" fill="url(#bgGrad)"/>
+              <rect width="480" height="100" rx="12" fill="url(#scan)"/>
+              <rect width="480" height="100" rx="12" fill="none" stroke="#1e3a2a" stroke-width="1.2"/>
+              <text x="22" y="66"
+                font-family="'Courier New', Courier, monospace"
+                font-size="62" font-weight="bold"
+                fill="#2ecc71" filter="url(#tg)"
+                letter-spacing="-1">pine</text>
+              <text x="168" y="66"
+                font-family="'Courier New', Courier, monospace"
+                font-size="62" font-weight="bold"
+                fill="#dff5e8"
+                letter-spacing="-1">TERM</text>
+              <rect x="335" y="16" width="14" height="55" rx="2" fill="#2ecc71" opacity="0.85">
+                <animate attributeName="opacity" values="0.85;0.08;0.85" dur="1.1s" repeatCount="indefinite"/>
+              </rect>
+              <text x="22" y="87"
+                font-family="'Courier New', Courier, monospace"
+                font-size="10" fill="#4ade80" opacity="0.5" letter-spacing="2.2">WEB · UART · SERIAL TERMINAL</text>
+              <g opacity="0.27" transform="translate(302,88)">
+                <rect x="0"   y="0" width="3" height="3" rx="0.8" fill="#2ecc71"/>
+                <rect x="7"   y="0" width="3" height="3" rx="0.8" fill="#2ecc71"/>
+                <rect x="14"  y="0" width="3" height="3" rx="0.8" fill="#1a5c38"/>
+                <rect x="21"  y="0" width="3" height="3" rx="0.8" fill="#2ecc71"/>
+                <rect x="28"  y="0" width="3" height="3" rx="0.8" fill="#1a5c38"/>
+                <rect x="35"  y="0" width="3" height="3" rx="0.8" fill="#2ecc71"/>
+                <rect x="42"  y="0" width="3" height="3" rx="0.8" fill="#2ecc71"/>
+                <rect x="49"  y="0" width="3" height="3" rx="0.8" fill="#1a5c38"/>
+                <rect x="56"  y="0" width="3" height="3" rx="0.8" fill="#2ecc71"/>
+                <rect x="63"  y="0" width="3" height="3" rx="0.8" fill="#1a5c38"/>
+                <rect x="70"  y="0" width="3" height="3" rx="0.8" fill="#2ecc71"/>
+                <rect x="77"  y="0" width="3" height="3" rx="0.8" fill="#2ecc71"/>
+                <rect x="84"  y="0" width="3" height="3" rx="0.8" fill="#1a5c38"/>
+                <rect x="91"  y="0" width="3" height="3" rx="0.8" fill="#2ecc71"/>
+                <rect x="98"  y="0" width="3" height="3" rx="0.8" fill="#2ecc71"/>
+                <rect x="105" y="0" width="3" height="3" rx="0.8" fill="#1a5c38"/>
+                <rect x="112" y="0" width="3" height="3" rx="0.8" fill="#2ecc71"/>
+              </g>
+            </svg>
             <button class="theme-toggle secondary" onclick="toggleTheme()" id="themeBtn">
                 <span class="theme-toggle-icon" id="themeIcon">🌙</span>
-                <span class="theme-toggle-label" id="themeLabel">Night</span>
+                <span class="theme-toggle-label" id="themeLabel">Dark</span>
             </button>
         </div>
 
@@ -1069,7 +1121,7 @@
             isDayTheme = !isDayTheme;
             document.body.classList.toggle('day', isDayTheme);
             document.getElementById('themeIcon').textContent  = isDayTheme ? '☀️' : '🌙';
-            document.getElementById('themeLabel').textContent = isDayTheme ? 'Day' : 'Night';
+            document.getElementById('themeLabel').textContent = isDayTheme ? 'Light' : 'Night';
             try { localStorage.setItem('pineTERM-theme', isDayTheme ? 'day' : 'night'); } catch(e) {}
         }
 
