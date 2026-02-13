@@ -78,19 +78,12 @@ pineTERM supports automated command sequences via JSON files for testing and bat
 
 ```json
 [
-  { "type": "ascii", "data": "AT", "times": 0 },
-
-  { "type": "ascii", "data": "AT+GMR", "times": 1, "postDelay": 500 },
-
-  { "type": "ascii", "data": "AT+CWMODE=1", "times": 1, "postDelay": 1000 },
-
-  { "type": "ascii", "data": "AT+CWJAP=\"MyNetwork\",\"MyPassword\"",
-    "times": 1, "preDelay": 200, "postDelay": 5000 },
-
+  { "type": "ascii", "data": "AT\r\n", "times": 0 },
+  { "type": "ascii", "data": "AT+GMR\r\n", "times": 1, "postDelay": 500 },
+  { "type": "ascii", "data": "AT+CWMODE=1\r\n", "times": 1, "postDelay": 1000 },
+  { "type": "ascii", "data": "AT+CWJAP=\"MyNetwork\",\"MyPassword\"\r\n", "times": 1, "preDelay": 200, "postDelay": 5000 },
   { "type": "hex", "data": "FF FE 01 00", "times": 3, "postDelay": 300 },
-
-  { "type": "ascii", "data": "PING", "times": 5, "postDelay": 1000 },
-
+  { "type": "ascii", "data": "PING\r\n", "times": 5, "postDelay": 1000 },
   { "type": "hex", "data": "AA 55 0D 0A", "times": -1, "preDelay": 50, "postDelay": 50 }
 ]
 ```
@@ -192,6 +185,7 @@ Contributions welcome! Please:
 - Inspired by classic terminal emulators and modern web technologies
   
 **Made with 💙 for hardware hackers**
+
 
 
 
