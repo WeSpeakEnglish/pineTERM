@@ -11,7 +11,7 @@ A modern, browser-based serial terminal for UART communication with microcontrol
 ## ✨ Features
 
 - **🔌 Native Web Serial API** - Direct hardware communication without native applications
-- **📊 Dual View Modes** - Simultaneous HEX and ASCII terminal views with synchronized scrolling
+- **📊 HEX and ASCII View Modes** - On-the-fly switchable HEX and ASCII terminal views with synchronized scrolling
 - **🎨 Day/Night Themes** - Switch between dark and light modes with persistent preferences
 - **📋 Smart Input Handling** - Auto-formatting HEX input with real-time validation
 - **📁 JSON Command Sequences** - Automated testing with programmable command batches
@@ -192,6 +192,7 @@ Contributions welcome! Please:
 - Inspired by classic terminal emulators and modern web technologies
   
 **Made with 💙 for hardware hackers**
+
 
 
 
