@@ -399,7 +399,7 @@ function updateExportButtonCount() {
 	const count = activeTab === 'hex' ? fullHexLog.length : fullAsciiLog.length;
 	const exportBtn = document.querySelector('button[onclick="exportLog()"]');
 	if (exportBtn) {
-		exportBtn.textContent = `Export log (${count} lines)`;
+		exportBtn.textContent = `Export log (${count} packets)`;
 	}
 }
 
