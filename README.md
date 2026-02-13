@@ -8,7 +8,7 @@ A modern, browser-based serial terminal for UART communication with microcontrol
 
 ![pineTERM Screenshot](https://github.com/WeSpeakEnglish/images/blob/main/pineterm.png)
 
-## ✨ Features
+## Features
 
 - **Native Web Serial API** - Direct hardware communication without native applications
 - **HEX and ASCII View Modes** - On-the-fly switchable HEX and ASCII terminal views with synchronized scrolling
@@ -185,6 +185,7 @@ Contributions welcome! Please:
 - Inspired by classic terminal emulators and modern web technologies
   
 **Made with 💙 for hardware hackers**
+
 
 
 
