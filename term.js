@@ -17,6 +17,12 @@ let bufferTimeout = null;
 let fullHexLog = [];
 let fullAsciiLog = [];
 
+// Performance optimization: Batch DOM updates
+let pendingLogEntries = [];
+let logFlushScheduled = false;
+const LOG_FLUSH_INTERVAL = 50; // ms - batch updates every 50ms
+const MAX_BUFFER_SIZE = 16384; // Max bytes to buffer before forced flush
+
 // Check browser support
 if (!('serial' in navigator)) {
 	alert('Web Serial API is not supported in this browser. Please use Chrome, Edge, or Opera.');
@@ -35,12 +41,7 @@ hexInput.addEventListener('input', function(e) {
 	// Remove existing spaces
 	value = value.replace(/\s/g, '');
 	
-	// Limit to valid hex pairs (max 100 bytes = 200 chars)
-	if (value.length > 200) {
-		value = value.substring(0, 200);
-	}
-	
-	// Insert space every 2 characters
+	// Insert space every 2 characters (no length limit)
 	let formatted = '';
 	for (let i = 0; i < value.length; i += 2) {
 		if (i > 0) formatted += ' ';
@@ -80,12 +81,12 @@ hexInput.addEventListener('paste', function(e) {
 	e.preventDefault();
 	const pastedText = (e.clipboardData || window.clipboardData).getData('text');
 	
-	// Clean pasted content - keep only hex digits
+	// Clean pasted content - keep only hex digits (no length limit)
 	const cleaned = pastedText.replace(/[^0-9A-Fa-f]/g, '').toUpperCase();
 	
 	// Format with spaces
 	let formatted = '';
-	for (let i = 0; i < cleaned.length && i < 200; i += 2) {
+	for (let i = 0; i < cleaned.length; i += 2) {
 		if (i > 0) formatted += ' ';
 		formatted += cleaned.substring(i, i + 2);
 	}
@@ -98,9 +99,9 @@ hexInput.addEventListener('paste', function(e) {
 	const afterCursor = currentValue.substring(end);
 	const newValue = beforeCursor + cleaned + afterCursor;
 	
-	// Reformat
+	// Reformat (no length limit)
 	let finalFormatted = '';
-	for (let i = 0; i < newValue.length && i < 200; i += 2) {
+	for (let i = 0; i < newValue.length; i += 2) {
 		if (i > 0) finalFormatted += ' ';
 		finalFormatted += newValue.substring(i, i + 2);
 	}
@@ -126,6 +127,9 @@ function switchTab(tab) {
 	// Update terminal bodies
 	document.getElementById('hexTerminal').classList.toggle('active', tab === 'hex');
 	document.getElementById('asciiTerminal').classList.toggle('active', tab === 'ascii');
+	
+	// Update export button count when switching tabs
+	updateExportButtonCount();
 }
 
 async function toggleConnection() {
@@ -140,7 +144,8 @@ async function toggleConnection() {
 				dataBits: parseInt(document.getElementById('dataBits').value),
 				stopBits: parseInt(document.getElementById('stopBits').value),
 				parity: document.getElementById('parity').value,
-				flowControl: document.getElementById('flowControl').value
+				flowControl: document.getElementById('flowControl').value,
+				bufferSize: 8192 // Increase buffer size for high baud rates
 			};
 			
 			await port.open(options);
@@ -206,14 +211,18 @@ async function readData() {
 				
 				if (timingEnabled) {
 					// Check if this is a new packet or continuation
-					const timeSinceLast = (now - lastReceiveTime) * 1000; // convert to microseconds
+					const timeSinceLast = (now - lastReceiveTime); 
 					
 					if (timeSinceLast > timingThreshold && receiveBuffer.length > 0) {
 						// Flush previous buffer as a complete packet
 						flushReceiveBuffer();
 					}
 					
-					// Add to buffer
+					// Add to buffer with size limit to prevent memory leaks
+					if (receiveBuffer.length + value.length > MAX_BUFFER_SIZE) {
+						// Buffer overflow - flush what we have first
+						flushReceiveBuffer();
+					}
 					receiveBuffer.push(...value);
 					lastReceiveTime = now;
 					
@@ -223,12 +232,15 @@ async function readData() {
 						if (receiveBuffer.length > 0) {
 							flushReceiveBuffer();
 						}
-					}, timingThreshold / 1000 + 10); // Convert μs to ms, add small buffer
+					}, Math.max(timingThreshold + 10, 50)); 
 					} else {
-					// No timing - log immediately
+					// No timing - process immediately but yield if needed
 					processReceivedData(value);
 				}
 			}
+			
+			// Yield to main thread every iteration to prevent blocking
+			await new Promise(resolve => setTimeout(resolve, 0));
 		}
 		} catch (err) {
 		if (isConnected) {
@@ -249,7 +261,110 @@ function flushReceiveBuffer() {
 function processReceivedData(data) {
 	rxBytes += data.length;
 	updateStats();
-	logData(data, 'rx');
+	
+	// Queue data for batched logging instead of immediate DOM update
+	queueLogData(data, 'rx');
+}
+
+// Batched logging system to prevent UI freezing
+function queueLogData(data, direction) {
+	pendingLogEntries.push({ data, direction, timestamp: Date.now() });
+	
+	// Schedule flush if not already scheduled
+	if (!logFlushScheduled) {
+		logFlushScheduled = true;
+		setTimeout(flushLogBuffer, LOG_FLUSH_INTERVAL);
+	}
+	
+	// Force flush if buffer gets too large
+	if (pendingLogEntries.length > 50 || 
+		pendingLogEntries.reduce((sum, e) => sum + e.data.length, 0) > MAX_BUFFER_SIZE) {
+		if (logFlushScheduled) {
+			clearTimeout(flushLogBuffer);
+		}
+		flushLogBuffer();
+	}
+}
+
+function flushLogBuffer() {
+	logFlushScheduled = false;
+	
+	if (pendingLogEntries.length === 0) return;
+	
+	const entries = pendingLogEntries.splice(0); // Clear pending array
+	const fragmentHex = document.createDocumentFragment();
+	const fragmentAscii = document.createDocumentFragment();
+	const timestamp = new Date().toLocaleTimeString('en-US', { 
+		hour12: false, 
+		hour: '2-digit', 
+		minute: '2-digit', 
+		second: '2-digit',
+		fractionalSecondDigits: 3 
+	});
+	
+	entries.forEach(entry => {
+		const { data, direction } = entry;
+		
+		// HEX view
+		const hexStr = Array.from(data)
+		.map(b => b.toString(16).padStart(2, '0').toUpperCase())
+		.join(' ');
+		
+		const hexEntry = document.createElement('div');
+		hexEntry.className = 'log-entry';
+		hexEntry.innerHTML = `
+		<span class="timestamp">${timestamp}</span>
+		<span class="direction ${direction}">${direction.toUpperCase()}</span>
+		<span class="data hex">${hexStr}</span>
+		`;
+		fragmentHex.appendChild(hexEntry);
+		
+		// Store in full log for export
+		fullHexLog.push(hexEntry.cloneNode(true));
+		
+		// ASCII view
+		const asciiStr = Array.from(data)
+		.map(b => {
+			if (b >= 32 && b <= 126) return String.fromCharCode(b);
+			if (b === 10) return '␊';
+			if (b === 13) return '␍';
+			if (b === 9) return '␉';
+			return '·';
+		})
+		.join('');
+		
+		const asciiEntry = document.createElement('div');
+		asciiEntry.className = 'log-entry';
+		asciiEntry.innerHTML = `
+		<span class="timestamp">${timestamp}</span>
+		<span class="direction ${direction}">${direction.toUpperCase()}</span>
+		<span class="data">${asciiStr}</span>
+		`;
+		fragmentAscii.appendChild(asciiEntry);
+		
+		// Store in full log for export
+		fullAsciiLog.push(asciiEntry.cloneNode(true));
+	});
+	
+	const hexTerminal = document.getElementById('hexTerminal');
+	const asciiTerminal = document.getElementById('asciiTerminal');
+	
+	hexTerminal.appendChild(fragmentHex);
+	asciiTerminal.appendChild(fragmentAscii);
+	
+	// Apply line limit (throttled)
+	applyLineLimit();
+	
+	// Update export button with current line count
+	updateExportButtonCount();
+	
+	// Auto scroll using requestAnimationFrame for smooth performance
+	if (document.getElementById('autoScroll').checked) {
+		requestAnimationFrame(() => {
+			hexTerminal.scrollTop = hexTerminal.scrollHeight;
+			asciiTerminal.scrollTop = asciiTerminal.scrollHeight;
+		});
+	}
 }
 
 function applyLineLimit() {
@@ -260,77 +375,37 @@ function applyLineLimit() {
 	const asciiTerminal = document.getElementById('asciiTerminal');
 	
 	// Remove excess entries from DOM (keep last maxLines)
-	while (hexTerminal.children.length > maxLines) {
-		hexTerminal.removeChild(hexTerminal.firstChild);
+	// Use batch removal for better performance
+	if (hexTerminal.children.length > maxLines) {
+		const toRemove = hexTerminal.children.length - maxLines;
+		for (let i = 0; i < toRemove && hexTerminal.firstChild; i++) {
+			hexTerminal.removeChild(hexTerminal.firstChild);
+		}
 	}
-	while (asciiTerminal.children.length > maxLines) {
-		asciiTerminal.removeChild(asciiTerminal.firstChild);
+	if (asciiTerminal.children.length > maxLines) {
+		const toRemove = asciiTerminal.children.length - maxLines;
+		for (let i = 0; i < toRemove && asciiTerminal.firstChild; i++) {
+			asciiTerminal.removeChild(asciiTerminal.firstChild);
+		}
+	}
+	
+	// No limit on export arrays - they keep growing until clearTerminal() is called
+	// This allows export to contain complete session history regardless of display limit
+}
+
+// Update export button to show line count
+function updateExportButtonCount() {
+	const activeTab = document.getElementById('hexTerminal').classList.contains('active') ? 'hex' : 'ascii';
+	const count = activeTab === 'hex' ? fullHexLog.length : fullAsciiLog.length;
+	const exportBtn = document.querySelector('button[onclick="exportLog()"]');
+	if (exportBtn) {
+		exportBtn.textContent = `Export log (${count} lines)`;
 	}
 }
 
+// Legacy function - kept for compatibility but now uses batching
 function logData(data, direction) {
-	const timestamp = new Date().toLocaleTimeString('en-US', { 
-		hour12: false, 
-		hour: '2-digit', 
-		minute: '2-digit', 
-		second: '2-digit',
-		fractionalSecondDigits: 3 
-	});
-	
-	// HEX view
-	const hexStr = Array.from(data)
-	.map(b => b.toString(16).padStart(2, '0').toUpperCase())
-	.join(' ');
-	
-	const hexEntry = document.createElement('div');
-	hexEntry.className = 'log-entry';
-	hexEntry.innerHTML = `
-	<span class="timestamp">${timestamp}</span>
-	<span class="direction ${direction}">${direction.toUpperCase()}</span>
-	<span class="data hex">${hexStr}</span>
-	`;
-	
-	const hexTerminal = document.getElementById('hexTerminal');
-	hexTerminal.appendChild(hexEntry);
-	
-	// Store in full log for export
-	fullHexLog.push(hexEntry.cloneNode(true));
-	
-	// Apply line limit
-	applyLineLimit();
-	
-	if (document.getElementById('autoScroll').checked) {
-		hexTerminal.scrollTop = hexTerminal.scrollHeight;
-	}
-	
-	// ASCII view
-	const asciiStr = Array.from(data)
-	.map(b => {
-		if (b >= 32 && b <= 126) return String.fromCharCode(b);
-		if (b === 10) return '␊';
-		if (b === 13) return '␍';
-		if (b === 9) return '␉';
-		return '·';
-	})
-	.join('');
-	
-	const asciiEntry = document.createElement('div');
-	asciiEntry.className = 'log-entry';
-	asciiEntry.innerHTML = `
-	<span class="timestamp">${timestamp}</span>
-	<span class="direction ${direction}">${direction.toUpperCase()}</span>
-	<span class="data">${asciiStr}</span>
-	`;
-	
-	const asciiTerminal = document.getElementById('asciiTerminal');
-	asciiTerminal.appendChild(asciiEntry);
-	
-	// Store in full log for export
-	fullAsciiLog.push(asciiEntry.cloneNode(true));
-	
-	if (document.getElementById('autoScroll').checked) {
-		asciiTerminal.scrollTop = asciiTerminal.scrollHeight;
-	}
+	queueLogData(data, direction);
 }
 
 async function sendHex() {
@@ -343,12 +418,20 @@ async function sendHex() {
 	if (!input) return;
 	
 	try {
-		const bytes = input.split(/\s+/)
+		const hexPairs = input.split(/\s+/).filter(p => p.length > 0);
+		const bytes = hexPairs
 		.map(b => parseInt(b, 16))
 		.filter(b => !isNaN(b) && b >= 0 && b <= 255);
 		
 		if (bytes.length === 0) {
 			alert('Invalid HEX input');
+			return;
+		}
+		
+		// Validate that all hex pairs are complete (2 characters each)
+		const invalidPairs = hexPairs.filter(p => p.length !== 2 || isNaN(parseInt(p, 16)));
+		if (invalidPairs.length > 0) {
+			alert(`Invalid HEX pairs: ${invalidPairs.join(', ')}`);
 			return;
 		}
 		
@@ -473,6 +556,9 @@ async function sendJsonCommands() {
 					
 					if (postDelay > 0) await new Promise(r => setTimeout(r, postDelay));
 					if (!infinite) i++;
+					
+					// Yield to main thread every iteration
+					await new Promise(resolve => setTimeout(resolve, 0));
 				}
 			}
 			} else {
@@ -517,6 +603,13 @@ function clearTerminal() {
 	document.getElementById('asciiTerminal').innerHTML = '';
 	fullHexLog = [];
 	fullAsciiLog = [];
+	pendingLogEntries = [];
+	
+	// Reset export button text
+	const exportBtn = document.querySelector('button[onclick="exportLog()"]');
+	if (exportBtn) {
+		exportBtn.textContent = 'Export log (0 lines)';
+	}
 }
 
 function exportLog() {
@@ -595,7 +688,10 @@ async function insertCommitDate() {
 	}
 }
 
-
+// Initialize export button on page load
+document.addEventListener('DOMContentLoaded', function() {
+	updateExportButtonCount();
+});
 
 
 
