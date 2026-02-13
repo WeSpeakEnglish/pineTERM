@@ -13,6 +13,10 @@ let receiveBuffer = [];
 let lastReceiveTime = 0;
 let bufferTimeout = null;
 
+// Full log storage for export functionality
+let fullHexLog = [];
+let fullAsciiLog = [];
+
 // Check browser support
 if (!('serial' in navigator)) {
 	alert('Web Serial API is not supported in this browser. Please use Chrome, Edge, or Opera.');
@@ -248,6 +252,22 @@ function processReceivedData(data) {
 	logData(data, 'rx');
 }
 
+function applyLineLimit() {
+	const maxLines = parseInt(document.getElementById('maxLines').value) || 0;
+	if (maxLines <= 0) return; // 0 means unlimited
+	
+	const hexTerminal = document.getElementById('hexTerminal');
+	const asciiTerminal = document.getElementById('asciiTerminal');
+	
+	// Remove excess entries from DOM (keep last maxLines)
+	while (hexTerminal.children.length > maxLines) {
+		hexTerminal.removeChild(hexTerminal.firstChild);
+	}
+	while (asciiTerminal.children.length > maxLines) {
+		asciiTerminal.removeChild(asciiTerminal.firstChild);
+	}
+}
+
 function logData(data, direction) {
 	const timestamp = new Date().toLocaleTimeString('en-US', { 
 		hour12: false, 
@@ -272,6 +292,12 @@ function logData(data, direction) {
 	
 	const hexTerminal = document.getElementById('hexTerminal');
 	hexTerminal.appendChild(hexEntry);
+	
+	// Store in full log for export
+	fullHexLog.push(hexEntry.cloneNode(true));
+	
+	// Apply line limit
+	applyLineLimit();
 	
 	if (document.getElementById('autoScroll').checked) {
 		hexTerminal.scrollTop = hexTerminal.scrollHeight;
@@ -298,6 +324,9 @@ function logData(data, direction) {
 	
 	const asciiTerminal = document.getElementById('asciiTerminal');
 	asciiTerminal.appendChild(asciiEntry);
+	
+	// Store in full log for export
+	fullAsciiLog.push(asciiEntry.cloneNode(true));
 	
 	if (document.getElementById('autoScroll').checked) {
 		asciiTerminal.scrollTop = asciiTerminal.scrollHeight;
@@ -486,12 +515,14 @@ function updateStats() {
 function clearTerminal() {
 	document.getElementById('hexTerminal').innerHTML = '';
 	document.getElementById('asciiTerminal').innerHTML = '';
+	fullHexLog = [];
+	fullAsciiLog = [];
 }
 
 function exportLog() {
 	const activeTab = document.getElementById('hexTerminal').classList.contains('active') ? 'hex' : 'ascii';
-	const terminal = document.getElementById(activeTab + 'Terminal');
-	const entries = terminal.querySelectorAll('.log-entry');
+	// Use full log arrays instead of DOM for export
+	const entries = activeTab === 'hex' ? fullHexLog : fullAsciiLog;
 	let log = '';
 	
 	entries.forEach(entry => {
@@ -563,6 +594,8 @@ async function insertCommitDate() {
 		document.getElementById("commit-date").innerHTML = " repository";
 	}
 }
+
+
 
 
 
