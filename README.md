@@ -10,16 +10,16 @@ A modern, browser-based serial terminal for UART communication with microcontrol
 
 ## ✨ Features
 
-- **🔌 Native Web Serial API** - Direct hardware communication without native applications
-- **📊 HEX and ASCII View Modes** - On-the-fly switchable HEX and ASCII terminal views with synchronized scrolling
-- **🎨 Day/Night Themes** - Switch between dark and light modes with persistent preferences
-- **📋 Smart Input Handling** - Auto-formatting HEX input with real-time validation
-- **📁 JSON Command Sequences** - Automated testing with programmable command batches
-- **⏱️ Packet Timing Control** - Intelligent frame detection based on inter-byte timing
-- **📤 Log Export** - Save terminal output as timestamped text files
-- **📱 Responsive Design** - Works on desktop and tablet browsers
+- **Native Web Serial API** - Direct hardware communication without native applications
+- **HEX and ASCII View Modes** - On-the-fly switchable HEX and ASCII terminal views with synchronized scrolling
+- **Day/Night Themes** - Switch between dark and light modes with persistent preferences
+- **Smart Input Handling** - Auto-formatting HEX input with real-time validation
+- **JSON Command Sequences** - Automated testing with programmable command batches
+- **Packet Timing Control** - Intelligent frame detection based on inter-byte timing
+- **Log Export** - Save terminal output as timestamped text files
+- **Responsive Design** - Works on desktop and tablet browsers
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Requirements
 
@@ -29,7 +29,7 @@ A modern, browser-based serial terminal for UART communication with microcontrol
 
 ### Live Demo (No Installation Required!)
 
-**🌐 Use it right now:** [https://wespeakenglish.github.io/pineTERM/](https://wespeakenglish.github.io/pineTERM/)
+**Use it right now:** [https://wespeakenglish.github.io/pineTERM/](https://wespeakenglish.github.io/pineTERM/)
 
 Simply open the link above in a supported browser, click **"Connect to UART"**, and select your device. That's it!
 
@@ -49,7 +49,7 @@ cd pineTERM
 3. Monitor: View responses in both HEX and ASCII tabs
 4. Export: Click "Export log" to save the session
 
-### 📖JSON Command Sequences
+### JSON Command Sequences
 pineTERM supports automated command sequences via JSON files for testing and batch operations.
 
 ### JSON Schema
@@ -105,7 +105,7 @@ pineTERM supports automated command sequences via JSON files for testing and bat
 3. Click "Send JSON Commands" to execute
 4. Click "Stop" to halt execution
 
-### 🛠️ Configuration Options
+### Configuration Options
 
 #### Serial Parameters
 
@@ -134,23 +134,23 @@ Enable "Separated less than X μSec treat like one package" to:
 - Prevent frame fragmentation on high-speed streams
 - Default: 5000μs (5ms) threshold
 
-### 🔒 Security & Privacy
+### Security & Privacy
 
 - User Permission Required: Browser prompts for serial port access each session
 - No Data Transmission: All communication stays local between browser and device
 - No Storage: Logs are not saved unless explicitly exported by user
 - HTTPS Required: Web Serial API requires secure context (localhost or HTTPS)
 
-### 🌐 Browser Compatibility
+### Browser Compatibility
 
 | Browser        | Support | Notes                                                   |
 | -------------- | ------- | ------------------------------------------------------- |
-| Chrome 89+     | ✅ Full  | Windows, macOS, Linux, ChromeOS                         |
-| Edge 89+       | ✅ Full  | Windows, macOS, Linux                                   |
-| Opera          | ✅ Full  | Windows, macOS, Linux                                   |
-| Firefox        | ❌ None  | [Vote for implementation](https://connect.mozilla.org/) |
-| Safari         | ❌ None  | Not supported                                           |
-| Chrome Android | ❌ None  | USB serial unavailable on mobile                        |
+| Chrome 89+     |  Full  | Windows, macOS, Linux, ChromeOS                         |
+| Edge 89+       |  Full  | Windows, macOS, Linux                                   |
+| Opera          |  Full  | Windows, macOS, Linux                                   |
+| Firefox        |  None  | [Vote for implementation](https://connect.mozilla.org/) |
+| Safari         |  None  | Not supported                                           |
+| Chrome Android |  None  | USB serial unavailable on mobile                        |
 
 ###  Use Cases
 
@@ -160,7 +160,7 @@ Enable "Separated less than X μSec treat like one package" to:
 - Reverse Engineering - Analyze proprietary serial protocols
 - Education - Teach serial communication without complex tools
 
-###  🐛 Troubleshooting
+###  Troubleshooting
 
 | Issue                          | Solution                                                  |
 | ------------------------------ | --------------------------------------------------------- |
@@ -169,7 +169,7 @@ Enable "Separated less than X μSec treat like one package" to:
 | Garbled text                   | Verify baud rate matches device configuration             |
 | JSON commands fail             | Validate JSON syntax, check console for errors            |
 
-### 🤝 Contributing
+### Contributing
 
 Contributions welcome! Please:
 
@@ -179,12 +179,13 @@ Contributions welcome! Please:
 4. Push to branch (git push origin feature/amazing-feature)
 5. Open a Pull Request
 
-### 🙏 Acknowledgments
+### Acknowledgments
 - Built with vanilla JavaScript—no frameworks, no dependencies
 - Uses the Web Serial API standard
 - Inspired by classic terminal emulators and modern web technologies
   
 **Made with 💙 for hardware hackers**
+
 
 
 
