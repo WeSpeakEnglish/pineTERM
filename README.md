@@ -4,7 +4,7 @@
 [![Browser: Chrome](https://img.shields.io/badge/Browser-Chrome%20|%20Edge%20|%20Opera-orange)](https://caniuse.com/web-serial)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Online-success)](https://wespeakenglish.github.io/pineTERM/)
 
-A modern, browser-based serial terminal for UART communication with microcontrollers, embedded devices, and IoT hardware. No installation required—just open in your browser and connect to your serial device.
+A modern, browser-based serial terminal for UART communication with microcontrollers, embedded devices, and IoT hardware. No installation required - just open in your browser and connect to your serial device.
 
 ![pineTERM Screenshot](https://github.com/WeSpeakEnglish/images/blob/main/pineterm.png)
 
@@ -185,6 +185,7 @@ Contributions welcome! Please:
 - Inspired by classic terminal emulators and modern web technologies
   
 **Made with 💙 for hardware hackers**
+
 
 
 
