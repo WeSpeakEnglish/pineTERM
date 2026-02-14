@@ -6,8 +6,15 @@
     <title>pineTERM</title>
     <link rel="stylesheet" href="style.css">
     <base target="_blank">
+<base target="_blank">
 </head>
 <body>
+    <!-- Theme Toggle - Fixed position top right -->
+    <button class="theme-toggle secondary" onclick="toggleTheme()" id="themeBtn">
+        <span class="theme-toggle-icon" id="themeIcon">🌙</span>
+        <span class="theme-toggle-label" id="themeLabel">Night</span>
+    </button>
+
     <div class="container">
         <div class="header-row">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 100" width="480" height="100" style="max-width:100%;height:auto;position:relative;z-index:1;">
@@ -58,10 +65,6 @@
                 <rect x="112" y="0" width="3" height="3" rx="0.8" fill="#00d4ff"/>
               </g>
             </svg>
-            <button class="theme-toggle secondary" onclick="toggleTheme()" id="themeBtn">
-                <span class="theme-toggle-icon" id="themeIcon">🌙</span>
-                <span class="theme-toggle-label" id="themeLabel">Night</span>
-            </button>
         </div>
 
         <!-- Connection Panel -->
@@ -117,16 +120,24 @@
         <!-- Send Command Panel -->
         <div class="panel">
             <div class="panel-title">Send Command</div>
-            <div class="send-section">
-                <div class="send-row">
-                    <input type="text" id="hexInput" placeholder="50 51 52 (HEX bytes separated by space)" maxlength="200">
-                    <button onclick="sendHex()">Send HEX</button>
+            <div class="send-section" id="sendSection">
+                <!-- HEX Input Row -->
+                <div class="send-row" data-type="hex">
+                    <input type="text" class="hex-input" placeholder="50 51 52 (HEX bytes separated by space)" maxlength="200">
+                    <button onclick="sendHex(this)">Send HEX</button>
+                    <button class="btn-add" onclick="addHexField()" title="Add HEX field">+</button>
                 </div>
-                <div class="send-row">
-                    <input type="text" id="asciiInput" placeholder="PQR (ASCII text)">
-                    <button onclick="sendAscii()">Send ASCII</button>
+
+                <!-- ASCII Input Row -->
+                <div class="send-row" data-type="ascii">
+                    <input type="text" class="ascii-input" placeholder="PQR (ASCII text)">
+                    <button onclick="sendAscii(this)">Send ASCII</button>
+                    <button class="btn-add" onclick="addAsciiField()" title="Add ASCII field">+</button>
                 </div>
-                
+
+                <!-- Dynamic fields will be added here -->
+                <div id="dynamicFields"></div>
+
                 <div class="line-ending">
                     <span style="color: #8892b0; font-size: 13px;">At the end:</span>
                     <label class="radio-group">
@@ -157,11 +168,13 @@
                 </div>
             </div>
         </div>
-<script src="term.js"></script>
+
+        <script src="term.js"></script>
+
         <!-- Combined Terminal Panel -->
         <div class="panel">
             <div class="terminal-tabs">
-				<div class="tab-buttons">
+                <div class="tab-buttons">
                     <button class="tab-btn active" onclick="switchTab('hex')">HEX VIEW</button>
                     <button class="tab-btn" onclick="switchTab('ascii')">ASCII VIEW</button>
                 </div>
@@ -180,19 +193,17 @@
                         <span>packets</span>
                     </label>
                 </div>
-
-
             </div>
-            
-            <div class="terminal-container">
 
+            <div class="terminal-container">
                 <div class="terminal-body active" id="hexTerminal"></div>
                 <div class="terminal-body ascii-view" id="asciiTerminal"></div>
             </div>
-												<div style="margin-left: auto;">
-					<button class="secondary" onclick="exportLog()">Export log</button>
-                    <button class="secondary danger" onclick="clearTerminal()">Clear</button>
-					</div>
+
+            <div style="margin-left: auto; margin-top: 10px;">
+                <button class="secondary" onclick="exportLog()">Export log</button>
+                <button class="secondary danger" onclick="clearTerminal()">Clear</button>
+            </div>
         </div>
 
         <a href="https://github.com/WeSpeakEnglish/pineTERM" target="_blank">

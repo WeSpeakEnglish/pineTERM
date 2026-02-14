@@ -1,5 +1,4 @@
-
-        /* ── Theme variables ────────────────────────────────────────────── */
+/* ── Theme variables ────────────────────────────────────────────── */
         :root {
             /* Night (default) */
             --bg-gradient:       linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -77,6 +76,39 @@
 
         .container { max-width: 1200px; margin: 0 auto; }
 
+        /* ── Theme toggle - Fixed position top right ───────────────────── */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 10px 15px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--panel-shadow);
+        }
+
+        .theme-toggle:hover { 
+            border-color: var(--accent); 
+            box-shadow: 0 5px 20px rgba(0,180,255,0.2);
+        }
+
+        .theme-toggle-icon { font-size: 16px; line-height: 1; }
+
+        .theme-toggle-label { 
+            font-size: 12px; 
+            font-weight: 500;
+            color: var(--body-text);
+        }
+
         /* ── Header row ─────────────────────────────────────────────────── */
         .header-row {
             display: flex;
@@ -115,28 +147,6 @@
             text-shadow: 0 0 20px rgba(0,180,255,0.25);
             transition: color 0.4s ease;
         }
-
-        /* ── Theme toggle ───────────────────────────────────────────────── */
-        .theme-toggle {
-            position: absolute;
-            right: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--panel-bg);
-            border: 1px solid var(--panel-border);
-            border-radius: 20px;
-            padding: 15px 15px 15px 15px;
-            cursor: pointer;
-            user-select: none;
-            transition: background 0.3s, border-color 0.3s;
-        }
-
-        .theme-toggle:hover { border-color: var(--accent); }
-
-        .theme-toggle-icon { font-size: 16px; line-height: 1; }
-
-        .theme-toggle-label { display: none; }
 
         /* ── Panels ─────────────────────────────────────────────────────── */
         .panel {
@@ -250,11 +260,89 @@
             box-shadow: 0 5px 20px rgba(255,71,87,0.4);
         }
 
+        /* ── Add Field Button (+) ───────────────────────────────────────── */
+        button.btn-add {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--btn-secondary-bg);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            min-width: unset;
+        }
+
+        button.btn-add:hover:not(:disabled) {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,180,255,0.4);
+        }
+
+        /* ── Remove Field Button (×) ────────────────────────────────────── */
+        button.btn-remove {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: #ff4757;
+            border: 1px solid #ff4757;
+            min-width: unset;
+        }
+
+        button.btn-remove:hover:not(:disabled) {
+            background: #ff4757;
+            color: white;
+            transform: translateY(-1px);
+        }
+
         /* ── Send section ────────────────────────────────────────────────── */
         .send-section { display: flex; flex-direction: column; gap: 15px; }
 
-        .send-row { display: flex; gap: 10px; align-items: center; }
-        .send-row input[type="text"] { flex: 1; }
+        .send-row { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+            flex-wrap: wrap;
+        }
+
+        .send-row input[type="text"] { flex: 1; min-width: 200px; }
+
+        .dynamic-field {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 10px;
+            background: var(--terminal-bg);
+            border-radius: 8px;
+            border: 1px solid var(--terminal-border);
+            margin-top: 5px;
+        }
+
+        .dynamic-field input[type="text"] { 
+            flex: 1; 
+            min-width: 200px; 
+        }
+
+        .field-label {
+            font-size: 11px;
+            color: var(--label-text);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 60px;
+        }
 
         .line-ending { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
 
@@ -401,7 +489,17 @@
             select, input[type="text"] { width: 100%; }
             .terminal-tabs { flex-direction: column; align-items: flex-start; }
             .timing-control { margin-left: 0; margin-top: 10px; }
-            .theme-toggle { position: static; margin-left: auto; }
+            .theme-toggle { 
+                top: 10px; 
+                right: 10px; 
+                padding: 8px 12px;
+            }
+            .theme-toggle-label { display: none; }
             .header-row { flex-wrap: wrap; gap: 10px; }
+            .send-row { flex-wrap: wrap; }
+            .send-row input[type="text"] { width: 100%; min-width: unset; }
+            .dynamic-field { flex-direction: column; align-items: stretch; }
+            .dynamic-field input[type="text"] { width: 100%; min-width: unset; }
         }
-    
+		
+		
