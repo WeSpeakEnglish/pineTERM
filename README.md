@@ -180,11 +180,12 @@ Contributions welcome! Please:
 5. Open a Pull Request
 
 ### Acknowledgments
-- Built with vanilla JavaScript—no frameworks, no dependencies
+- Built with vanilla JavaScript- no frameworks, no dependencies
 - Uses the Web Serial API standard
 - Inspired by classic terminal emulators and modern web technologies
   
 **Made with 💙 for hardware hackers**
+
 
 
 
