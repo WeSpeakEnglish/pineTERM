@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
     <!-- Theme Toggle - Fixed position top right -->
@@ -73,7 +74,7 @@
             <div class="connection-row">
                 <div class="input-group">
                     <label>Baud rate</label>
-                    <select id="baudRate">
+                    <select id="baudRate" onchange="if(this.value=='custom'){this.style.display='none';document.getElementById('customBaud').style.display='block';document.getElementById('customBaud').focus();}">
                         <option value="9600" selected>9600</option>
                         <option value="19200">19200</option>
                         <option value="38400">38400</option>
@@ -82,7 +83,9 @@
                         <option value="230400">230400</option>
                         <option value="460800">460800</option>
                         <option value="921600">921600</option>
+                        <option value="custom">Custom...</option>
                     </select>
+                    <input type="number" id="customBaud" style="display:none;width:100%" min="1" max="10000000" placeholder="Enter baud rate" onblur="addCustomBaud(this)" onkeypress="if(event.key==='Enter')addCustomBaud(this)">
                 </div>
                 <div class="input-group">
                     <label>Data bits</label>
@@ -222,6 +225,7 @@
         <div class="status-indicator">
             <div class="status-dot" id="statusDot"></div>
             <span id="statusText">Disconnected</span>
+            <span id="connTimeout" style="display:none;color:#ff4757;margin-left:10px;font-size:11px;">(Stuck? <a href="#" onclick="forceDisconnect();return false;" style="color:#ff4757;text-decoration:underline;">Force disconnect</a>)</span>
         </div>
         <div class="stats">
             <div class="stat">

@@ -1,3 +1,7 @@
+function addCustomBaud(inp){const s=document.getElementById('baudRate'),v=parseInt(inp.value);if(v&&v>0&&v<=10000000){let e=Array.from(s.options).find(o=>o.value==v);if(!e){e=document.createElement('option');e.value=v;e.text=v;s.insertBefore(e,s.options[s.length-1]);}s.value=v;}inp.style.display='none';s.style.display='block';if(!v||v<1||v>10000000)s.value='9600';}
+function showTimeoutWarning(show){const el=document.getElementById('connTimeout');if(el)el.style.display=show?'inline':'none';}
+function forceDisconnect(){console.log('Force disconnect');disconnect(true);}
+
 let port = null;
 let reader = null;
 let writer = null;
@@ -220,122 +224,110 @@ function removeField(fieldId) {
     }
 }
 
-async function toggleConnection() {
-    const btn = document.getElementById('connectBtn');
-
-    if (!isConnected) {
-        try {
-            port = await navigator.serial.requestPort();
-
-            const options = {
-                baudRate: parseInt(document.getElementById('baudRate').value),
-                dataBits: parseInt(document.getElementById('dataBits').value),
-                stopBits: parseInt(document.getElementById('stopBits').value),
-                parity: document.getElementById('parity').value,
-                flowControl: document.getElementById('flowControl').value,
-                bufferSize: 8192 // Increase buffer size for high baud rates
-            };
-
+async function toggleConnection(){
+    const btn=document.getElementById('connectBtn');
+    if(!isConnected){
+        try{
+            port=await navigator.serial.requestPort();
+            let baudRate=parseInt(document.getElementById('baudRate').value);
+            const customBaud=document.getElementById('customBaud');
+            if(customBaud&&customBaud.style.display!=='none'&&customBaud.value)baudRate=parseInt(customBaud.value);
+            if(!baudRate||baudRate<1||baudRate>10000000){alert('Invalid baud rate (1-10,000,000)');return;}
+            const options={baudRate:baudRate,dataBits:parseInt(document.getElementById('dataBits').value),stopBits:parseInt(document.getElementById('stopBits').value),parity:document.getElementById('parity').value,flowControl:document.getElementById('flowControl').value,bufferSize:8192};
             await port.open(options);
-
-            writer = port.writable.getWriter();
-            reader = port.readable.getReader();
-
-            isConnected = true;
-            btn.textContent = 'Disconnect';
+            writer=port.writable.getWriter();
+            reader=port.readable.getReader();
+            isConnected=true;
+            btn.textContent='Disconnect';
             btn.classList.add('danger');
             updateStatus(true);
-
-            readLoop = readData();
-
-            // Disable settings while connected
-            document.querySelectorAll('.connection-row select').forEach(s => s.disabled = true);
-
-        } catch (err) {
-            console.error('Connection error:', err);
-            alert('Failed to connect: ' + err.message);
+            showTimeoutWarning(false);
+            readLoop=readData();
+            document.querySelectorAll('.connection-row select,input').forEach(s=>s.disabled=true);
+        }catch(err){
+            console.error('Connection error:',err);
+            alert('Failed to connect: '+err.message);
+            await disconnect();
         }
-    } else {
-        await disconnect();
-    }
+    }else{await disconnect();}
 }
 
-async function disconnect() {
-    isConnected = false;
+async function disconnect(force=false) {
+    const btn=document.getElementById('connectBtn');
+    btn.disabled=true;
+    isConnected=false;
     updateStatus(false);
+    showTimeoutWarning(false);
 
-    if (reader) {
-        await reader.cancel();
-        reader = null;
+    if(bufferTimeout){clearTimeout(bufferTimeout);bufferTimeout=null;}
+    receiveBuffer=[];
+
+    if(reader){
+        try{
+            const cancelPromise=reader.cancel();
+            const timeoutPromise=new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),2000));
+            await Promise.race([cancelPromise,timeoutPromise]);
+        }catch(e){console.warn('Reader cancel failed:',e);}
+        try{reader.releaseLock();}catch(e){}
+        reader=null;
     }
 
-    if (writer) {
-        await writer.releaseLock();
-        writer = null;
+    if(writer){
+        try{writer.releaseLock();}catch(e){}
+        writer=null;
     }
 
-    if (port) {
-        await port.close();
-        port = null;
+    if(port){
+        try{
+            const closePromise=port.close();
+            const timeoutPromise=new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),3000));
+            await Promise.race([closePromise,timeoutPromise]);
+        }catch(e){
+            console.warn('Port close failed:',e);
+            if(port&&'forget'in port)try{await port.forget();}catch(e2){}
+        }
+        port=null;
     }
 
-    document.getElementById('connectBtn').textContent = 'Connect to UART';
-    document.getElementById('connectBtn').classList.remove('danger');
-
-    // Re-enable settings
-    document.querySelectorAll('.connection-row select').forEach(s => s.disabled = false);
+    btn.textContent='Connect to UART';
+    btn.classList.remove('danger');
+    btn.disabled=false;
+    document.querySelectorAll('.connection-row select,input').forEach(s=>s.disabled=false);
 }
 
 async function readData() {
-    try {
-        while (isConnected) {
-            const { value, done } = await reader.read();
-            if (done) break;
-
-            if (value && value.length > 0) {
-                const now = Date.now();
-                const timingEnabled = document.getElementById('enableTiming').checked;
-                const timingThreshold = parseInt(document.getElementById('timingValue').value) || 50000;
-
-                if (timingEnabled) {
-                    // Check if this is a new packet or continuation
-                    const timeSinceLast = (now - lastReceiveTime); 
-
-                    if (timeSinceLast > timingThreshold && receiveBuffer.length > 0) {
-                        // Flush previous buffer as a complete packet
-                        flushReceiveBuffer();
-                    }
-
-                    // Add to buffer with size limit to prevent memory leaks
-                    if (receiveBuffer.length + value.length > MAX_BUFFER_SIZE) {
-                        // Buffer overflow - flush what we have first
-                        flushReceiveBuffer();
-                    }
+    let stuckTimer=null;
+    try{
+        while(isConnected&&reader){
+            stuckTimer=setTimeout(()=>{if(isConnected)showTimeoutWarning(true);},5000);
+            let result;
+            try{result=await reader.read();}finally{clearTimeout(stuckTimer);}
+            const{value,done}=result;
+            if(done)break;
+            if(value&&value.length>0){
+                showTimeoutWarning(false);
+                const now=Date.now();
+                const timingEnabled=document.getElementById('enableTiming').checked;
+                const timingThreshold=parseInt(document.getElementById('timingValue').value)||50000;
+                if(timingEnabled){
+                    const timeSinceLast=(now-lastReceiveTime);
+                    if(timeSinceLast>timingThreshold&&receiveBuffer.length>0)flushReceiveBuffer();
+                    if(receiveBuffer.length+value.length>MAX_BUFFER_SIZE)flushReceiveBuffer();
                     receiveBuffer.push(...value);
-                    lastReceiveTime = now;
-
-                    // Set timeout to flush buffer
-                    if (bufferTimeout) clearTimeout(bufferTimeout);
-                    bufferTimeout = setTimeout(() => {
-                        if (receiveBuffer.length > 0) {
-                            flushReceiveBuffer();
-                        }
-                    }, Math.max(timingThreshold + 10, 50)); 
-                } else {
-                    // No timing - process immediately but yield if needed
-                    processReceivedData(value);
-                }
+                    lastReceiveTime=now;
+                    if(bufferTimeout)clearTimeout(bufferTimeout);
+                    bufferTimeout=setTimeout(()=>{if(receiveBuffer.length>0)flushReceiveBuffer();},Math.max(timingThreshold+10,50));
+                }else{processReceivedData(value);}
             }
-
-            // Yield to main thread every iteration to prevent blocking
-            await new Promise(resolve => setTimeout(resolve, 0));
+            await new Promise(resolve=>setTimeout(resolve,0));
         }
-    } catch (err) {
-        if (isConnected) {
-            console.error('Read error:', err);
-            await disconnect();
+    }catch(err){
+        if(isConnected){
+            console.error('Read error:',err);
+            if(err.name==='NetworkError'||err.message.includes('device disconnected')){await disconnect();}
+            else{showTimeoutWarning(true);setTimeout(()=>{if(isConnected)showTimeoutWarning(false);},3000);}
         }
-    }
+    }finally{if(stuckTimer)clearTimeout(stuckTimer);}
 }
 
 function flushReceiveBuffer() {
@@ -735,9 +727,8 @@ function exportLog() {
 }
 
 // Cleanup on page unload
-window.addEventListener('beforeunload', () => {
-    if (isConnected) disconnect();
-});
+window.addEventListener('beforeunload',async()=>{if(isConnected)await disconnect();});
+window.addEventListener('visibilitychange',()=>{if(document.hidden&&isConnected)console.log('Page hidden');});
 
 // ── Theme toggle ──────────────────────────────────────────────────
 let isDayTheme = false;
@@ -778,6 +769,17 @@ async function insertCommitDate() {
         document.getElementById("commit-date").innerHTML = " repository";
     }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,7 @@
+/* ── Custom Baud Rate ────────────────────────────────────────────── */
+#customBaud{display:none;width:100%}
+#connTimeout a:hover{color:#ff6b6b!important}
+
 /* ── Theme variables ────────────────────────────────────────────── */
         :root {
             /* Night (default) */
