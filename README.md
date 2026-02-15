@@ -19,6 +19,7 @@ A modern, browser-based serial terminal for UART communication with microcontrol
 - **Log Export** - Save terminal output as timestamped text files
 - **Responsive Design** - Works on desktop and tablet browsers
 - **Dynamic input fields** - add as many HEX and ASCII fields as you need, each with its own send button
+- **Custom baud rate support** - set the baud rate you need, not need to be only standard 
 
 ## Quick Start
 
@@ -186,6 +187,7 @@ Contributions welcome! Please:
 - Inspired by classic terminal emulators and modern web technologies
   
 **Made with 💙 for hardware hackers**
+
 
 
 
