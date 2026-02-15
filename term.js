@@ -243,7 +243,7 @@ async function toggleConnection(){
             updateStatus(true);
             showTimeoutWarning(false);
             readLoop=readData();
-            document.querySelectorAll('.connection-row select,input').forEach(s=>s.disabled=true);
+            document.querySelectorAll('.connection-row select, .connection-row input').forEach(s=>s.disabled=true);
         }catch(err){
             console.error('Connection error:',err);
             alert('Failed to connect: '+err.message);
@@ -292,7 +292,7 @@ async function disconnect(force=false) {
     btn.textContent='Connect to UART';
     btn.classList.remove('danger');
     btn.disabled=false;
-    document.querySelectorAll('.connection-row select,input').forEach(s=>s.disabled=false);
+    document.querySelectorAll('.connection-row select, .connection-row input').forEach(s=>s.disabled=false);
 }
 
 async function readData() {
@@ -769,8 +769,6 @@ async function insertCommitDate() {
         document.getElementById("commit-date").innerHTML = " repository";
     }
 }
-
-
 
 
 
