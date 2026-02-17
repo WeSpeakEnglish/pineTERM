@@ -227,6 +227,7 @@ function removeField(fieldId) {
 async function toggleConnection(){
     const btn=document.getElementById('connectBtn');
     if(!isConnected){
+		flushReceiveBuffer();
         try{
             port=await navigator.serial.requestPort();
             let baudRate=parseInt(document.getElementById('baudRate').value);
@@ -235,6 +236,11 @@ async function toggleConnection(){
             if(!baudRate||baudRate<1||baudRate>10000000){alert('Invalid baud rate (1-10,000,000)');return;}
             const options={baudRate:baudRate,dataBits:parseInt(document.getElementById('dataBits').value),stopBits:parseInt(document.getElementById('stopBits').value),parity:document.getElementById('parity').value,flowControl:document.getElementById('flowControl').value,bufferSize:8192};
             await port.open(options);
+			if(port.readable){
+                const flushReader=port.readable.getReader();
+                await flushReader.cancel();
+                flushReader.releaseLock();
+            }
             writer=port.writable.getWriter();
             reader=port.readable.getReader();
             isConnected=true;
