@@ -152,7 +152,7 @@ Enable "Separated less than X μSec treat like one package" to:
 | Opera          |  Full  | Windows, macOS, Linux                                   |
 | Firefox        |  With addon  | Windows, macOS, Linux with [addon](https://addons.mozilla.org/en-US/firefox/addon/webserial-for-firefox/) |
 | Safari         |  None  | Not supported                                           |
-| Chrome Android |  None  | USB serial unavailable on mobile                        |
+| Chrome Android |  via RFCOMM  | USB serial OTG not supported                        |
 
 ###  Use Cases
 
@@ -187,6 +187,7 @@ Contributions welcome! Please:
 - Inspired by classic terminal emulators and modern web technologies
   
 **Made with 💙 for hardware hackers**
+
 
 
 
