@@ -748,6 +748,8 @@ function toggleTheme() {
     document.getElementById('themeIcon').textContent  = isDayTheme ? '☀️' : '🌙';
     document.getElementById('themeLabel').textContent = isDayTheme ? 'Day' : 'Night';
     try { localStorage.setItem('pineTERM-theme', isDayTheme ? 'day' : 'night'); } catch(e) {}
+	    // Refresh status text color for new theme
+    updateStatus(isConnected);
 }
 
 // Restore saved theme on load
