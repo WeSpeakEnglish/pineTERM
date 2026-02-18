@@ -684,12 +684,12 @@ function updateStatus(connected) {
     if (connected) {
         dot.classList.add('connected');
         text.textContent = `Connected (${document.getElementById('baudRate').value} baud)`;
-        // Use dark green for day theme, bright green for night theme
+        // Dark green for day theme, bright green for night theme
         text.style.color = isDayTheme ? '#1a7a3a' : '#2ed573';
     } else {
         dot.classList.remove('connected');
         text.textContent = 'Disconnected';
-        // Use dark red for day theme, light gray for night theme
+        // Dark red for day theme, light gray for night theme
         text.style.color = isDayTheme ? '#dc3545' : '#e0e0e0';
     }
 }
@@ -748,7 +748,7 @@ function toggleTheme() {
     document.getElementById('themeIcon').textContent  = isDayTheme ? '☀️' : '🌙';
     document.getElementById('themeLabel').textContent = isDayTheme ? 'Day' : 'Night';
     try { localStorage.setItem('pineTERM-theme', isDayTheme ? 'day' : 'night'); } catch(e) {}
-	    // Refresh status text color for new theme
+    // Refresh status colors immediately
     updateStatus(isConnected);
 }
 

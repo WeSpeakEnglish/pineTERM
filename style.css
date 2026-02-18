@@ -524,7 +524,3 @@ body.day #statusText {
     font-weight: 600;
 }
 
-body.day:has(.status-dot.connected) #statusText {
-    color: #1a7a3a;
-}
-
