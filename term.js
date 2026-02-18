@@ -679,15 +679,18 @@ function stopJsonCommands() {
 function updateStatus(connected) {
     const dot = document.getElementById('statusDot');
     const text = document.getElementById('statusText');
+    const isDayTheme = document.body.classList.contains('day');
 
     if (connected) {
         dot.classList.add('connected');
         text.textContent = `Connected (${document.getElementById('baudRate').value} baud)`;
-        text.style.color = '#2ed573';
+        // Use dark green for day theme, bright green for night theme
+        text.style.color = isDayTheme ? '#1a7a3a' : '#2ed573';
     } else {
         dot.classList.remove('connected');
         text.textContent = 'Disconnected';
-        text.style.color = '#e0e0e0';
+        // Use dark red for day theme, light gray for night theme
+        text.style.color = isDayTheme ? '#dc3545' : '#e0e0e0';
     }
 }
 
@@ -775,6 +778,19 @@ async function insertCommitDate() {
         document.getElementById("commit-date").innerHTML = " repository";
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
