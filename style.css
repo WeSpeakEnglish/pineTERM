@@ -420,7 +420,7 @@
         .terminal-body {
             height: 280px;
             overflow-y: auto;
-            padding: 15px;
+            padding: 10px;
             font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 13px;
             line-height: 1.6;
