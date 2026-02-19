@@ -252,7 +252,10 @@ async function toggleConnection(){
             document.querySelectorAll('.connection-row select, .connection-row input').forEach(s=>s.disabled=true);
         }catch(err){
             console.error('Connection error:',err);
-            alert('Failed to connect: '+err.message);
+            // Skip alert if user cancelled port selection
+            if(err.name!=='NotFoundError'&&!err.message?.includes('No port selected')){
+                alert('Failed to connect: '+err.message);
+            }
             await disconnect();
         }
     }else{await disconnect();}
