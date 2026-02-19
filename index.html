@@ -183,14 +183,18 @@
                     <button class="tab-btn" onclick="switchTab('ascii')">ASCII VIEW</button>
                 </div>
                 <div class="terminal-controls" style="margin-right: auto;">
-                    <input type="checkbox" id="enableTiming" checked>
-                    <span>Separated less than</span>
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="enableTiming" checked>
+                        <span>Separated less than</span>
+                    </label>
                     <input type="number" id="timingValue" value="10" min="0" max="1000000" step="1">
                     <span>mSec treat like one package</span> 
-				</div>	
-				<div class="terminal-controls" style="margin-right: auto;">
-                    <input type="checkbox" id="autoScroll" checked>
-                    <span>Auto scroll</span>
+                </div>	
+                <div class="terminal-controls" style="margin-right: auto;">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="autoScroll" checked>
+                        <span>Auto scroll</span>
+                    </label>
                     &nbsp; &nbsp; 
                     <label class="checkbox-group">
                         <span>Show last:</span>
