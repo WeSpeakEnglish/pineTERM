@@ -28,7 +28,7 @@
             --timestamp-color:   #5a6a7a;
             --data-hex-color:    #a8a8a8;
             --data-ascii-color:  #90ee90;
-            --scrollbar-track:   rgba(0,0,0,0.2);
+            --scrollbar-track:   rgba(0,0,0,0.9);
             --scrollbar-thumb:   rgba(255,255,255,0.2);
             --scrollbar-hover:   rgba(255,255,255,0.35);
             --tab-inactive:      #8892b0;
@@ -58,7 +58,7 @@
             --timestamp-color:   #7a8fa8;
             --data-hex-color:    #4a6888;
             --data-ascii-color:  #1a7a3a;
-            --scrollbar-track:   rgba(0,0,0,0.05);
+            --scrollbar-track:   rgba(200,200,230,0.9);
             --scrollbar-thumb:   rgba(0,80,160,0.25);
             --scrollbar-hover:   rgba(0,80,160,0.45);
             --tab-inactive:      #4a6888;
