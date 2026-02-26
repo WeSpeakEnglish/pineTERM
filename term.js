@@ -32,9 +32,9 @@ let hexFieldCount = 0;
 let asciiFieldCount = 0;
 
 // Check browser support
-if (!('serial' in navigator)) {
-    alert('Web Serial API is not supported in this browser. Please use Chrome, Edge, or Opera.');
-}
+//if (!('serial' in navigator)) {
+//    alert('Web Serial API is not supported in this browser. Please use Chrome, Edge, or Opera.');
+//}
 
 // HEX Input handling - Auto-format and validate
 function setupHexInput(input) {
