@@ -133,11 +133,11 @@ Choose transmission termination:
 
 ### Packet Timing
 
-Enable "Separated less than X μSec treat like one package" to:
+Enable "Separated less than X milliseconds treat like one package" to:
 
 - Buffer rapid incoming bytes into single log entries
-- Prevent frame fragmentation on high-speed streams
-- Default: 5000μs (5ms) threshold
+- Prevent frame fragmentation
+- Default: 10 ms threshold
 
 ### Security & Privacy
 
