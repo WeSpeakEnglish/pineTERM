@@ -32,7 +32,7 @@ A modern, browser-based serial terminal for UART communication with microcontrol
 - USB-to-Serial adapter or native serial port
 - Target device (Arduino, ESP32, Raspberry Pi Pico, etc.)
 
-### Live Demo (No Installation Required!)
+### Live version (No Installation Required!)
 
 **Use it right now:** [https://wespeakenglish.github.io/pineTERM/](https://wespeakenglish.github.io/pineTERM/)
 
