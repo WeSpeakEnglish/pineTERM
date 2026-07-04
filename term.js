@@ -181,12 +181,15 @@ function getLastFieldRow(type) {
     return rows[rows.length - 1];
 }
 
-// Add new HEX input field - inserted right after the current last HEX field.
+// Add new HEX input field - inserted right after the clicked field.
 // Every field (including this new one) keeps its own "+" button.
-function addHexField() {
+function addHexField(btnElement) {
     hexFieldCount++;
 
-    const lastRow = getLastFieldRow('hex');
+    // Find the row that the clicked button belongs to, or fall back to static row
+    const clickedRow = btnElement
+        ? btnElement.closest('.send-row, .dynamic-field')
+        : document.querySelector('.send-row[data-type="hex"]');
 
     const fieldDiv = document.createElement('div');
     fieldDiv.className = 'dynamic-field';
@@ -197,10 +200,10 @@ function addHexField() {
         <input type="text" class="hex-input-dynamic" placeholder="50 51 52 (HEX bytes separated by space)" maxlength="200">
         <button onclick="sendHex(this)">Send HEX</button>
         <button class="btn-remove" onclick="removeField('${fieldDiv.id}','hex')" title="Remove field">×</button>
-        <button class="btn-add" onclick="addHexField()" title="Add HEX field">+</button>
+        <button class="btn-add" onclick="addHexField(this)" title="Add HEX field">+</button>
     `;
 
-    lastRow.insertAdjacentElement('afterend', fieldDiv);
+    clickedRow.insertAdjacentElement('afterend', fieldDiv);
 
     // Setup input handling for the new field
     const input = fieldDiv.querySelector('.hex-input-dynamic');
@@ -208,12 +211,15 @@ function addHexField() {
     input.focus();
 }
 
-// Add new ASCII input field - inserted right after the current last ASCII field.
+// Add new ASCII input field - inserted right after the clicked field.
 // Every field (including this new one) keeps its own "+" button.
-function addAsciiField() {
+function addAsciiField(btnElement) {
     asciiFieldCount++;
 
-    const lastRow = getLastFieldRow('ascii');
+    // Find the row that the clicked button belongs to, or fall back to static row
+    const clickedRow = btnElement
+        ? btnElement.closest('.send-row, .dynamic-field')
+        : document.querySelector('.send-row[data-type="ascii"]');
 
     const fieldDiv = document.createElement('div');
     fieldDiv.className = 'dynamic-field';
@@ -224,10 +230,10 @@ function addAsciiField() {
         <input type="text" class="ascii-input-dynamic" placeholder="Enter ASCII text">
         <button onclick="sendAscii(this)">Send ASCII</button>
         <button class="btn-remove" onclick="removeField('${fieldDiv.id}','ascii')" title="Remove field">×</button>
-        <button class="btn-add" onclick="addAsciiField()" title="Add ASCII field">+</button>
+        <button class="btn-add" onclick="addAsciiField(this)" title="Add ASCII field">+</button>
     `;
 
-    lastRow.insertAdjacentElement('afterend', fieldDiv);
+    clickedRow.insertAdjacentElement('afterend', fieldDiv);
 
     // Setup input handling for the new field
     const input = fieldDiv.querySelector('.ascii-input-dynamic');
@@ -846,6 +852,31 @@ async function insertCommitDate() {
         document.getElementById("commit-date").innerHTML = " repository";
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
