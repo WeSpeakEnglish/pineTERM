@@ -139,9 +139,6 @@
                     <button class="btn-add" onclick="addAsciiField()" title="Add ASCII field">+</button>
                 </div>
 
-                <!-- Dynamic fields will be added here -->
-                <div id="dynamicFields"></div>
-
                 <div class="line-ending">
                     <span style="color: #8892b0; font-size: 13px;">At the end:</span>
                     <label class="radio-group">
@@ -165,7 +162,7 @@
                 <div class="json-section">
                     <span style="color: #8892b0; font-size: 13px;">Send JSON command sequence</span>
                     <input type="text" id="jsonFileName" placeholder="Cmd.json" readonly>
-                    <button class="secondary" onclick="document.getElementById('jsonFile').click()">Select JSON</button>
+                    <button class="secondary" onclick="document.getElementById('jsonFile').value=''; document.getElementById('jsonFile').click()">Select JSON</button>
                     <input type="file" id="jsonFile" accept=".json" style="display: none;" onchange="handleJsonSelect(this)">
                     <button id="sendJsonBtn" onclick="sendJsonCommands()">Send JSON Commands</button>
                     <button id="stopJsonBtn" class="danger" onclick="stopJsonCommands()" style="display:none;">Stop</button>
@@ -211,6 +208,7 @@
 
             <div style="margin-left: auto; margin-top: 10px;">
                 <button class="secondary" onclick="exportLog()">Export log</button>
+                <button class="secondary" id="copyLogBtn" onclick="copyLog()">Copy log</button>
                 <button class="secondary danger" onclick="clearTerminal()">Clear</button>
             </div>
         </div>

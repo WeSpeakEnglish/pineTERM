@@ -266,11 +266,11 @@
 
         /* ── Add Field Button (+) ───────────────────────────────────────── */
         button.btn-add {
-            width: 36px;
-            height: 36px;
+            width: 28px;
+            height: 28px;
             padding: 0;
             border-radius: 50%;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 300;
             display: flex;
             align-items: center;

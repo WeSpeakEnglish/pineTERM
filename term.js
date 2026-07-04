@@ -170,22 +170,37 @@ function switchTab(tab) {
     updateExportButtonCount();
 }
 
-// Add new HEX input field
+// Get every existing row (static or dynamic) of a given type, in DOM order
+function getFieldRows(type) {
+    return document.querySelectorAll(`.send-row[data-type="${type}"], .dynamic-field[data-type="${type}"]`);
+}
+
+// Get the current last row of a given type - new fields are inserted right after it
+function getLastFieldRow(type) {
+    const rows = getFieldRows(type);
+    return rows[rows.length - 1];
+}
+
+// Add new HEX input field - inserted right after the current last HEX field.
+// Every field (including this new one) keeps its own "+" button.
 function addHexField() {
     hexFieldCount++;
-    const container = document.getElementById('dynamicFields');
+
+    const lastRow = getLastFieldRow('hex');
 
     const fieldDiv = document.createElement('div');
     fieldDiv.className = 'dynamic-field';
+    fieldDiv.dataset.type = 'hex';
     fieldDiv.id = `hex-field-${hexFieldCount}`;
     fieldDiv.innerHTML = `
         <span class="field-label">HEX ${hexFieldCount}</span>
         <input type="text" class="hex-input-dynamic" placeholder="50 51 52 (HEX bytes separated by space)" maxlength="200">
         <button onclick="sendHex(this)">Send HEX</button>
-        <button class="btn-remove" onclick="removeField('${fieldDiv.id}')" title="Remove field">×</button>
+        <button class="btn-remove" onclick="removeField('${fieldDiv.id}','hex')" title="Remove field">×</button>
+        <button class="btn-add" onclick="addHexField()" title="Add HEX field">+</button>
     `;
 
-    container.appendChild(fieldDiv);
+    lastRow.insertAdjacentElement('afterend', fieldDiv);
 
     // Setup input handling for the new field
     const input = fieldDiv.querySelector('.hex-input-dynamic');
@@ -193,22 +208,26 @@ function addHexField() {
     input.focus();
 }
 
-// Add new ASCII input field
+// Add new ASCII input field - inserted right after the current last ASCII field.
+// Every field (including this new one) keeps its own "+" button.
 function addAsciiField() {
     asciiFieldCount++;
-    const container = document.getElementById('dynamicFields');
+
+    const lastRow = getLastFieldRow('ascii');
 
     const fieldDiv = document.createElement('div');
     fieldDiv.className = 'dynamic-field';
+    fieldDiv.dataset.type = 'ascii';
     fieldDiv.id = `ascii-field-${asciiFieldCount}`;
     fieldDiv.innerHTML = `
         <span class="field-label">ASCII ${asciiFieldCount}</span>
         <input type="text" class="ascii-input-dynamic" placeholder="Enter ASCII text">
         <button onclick="sendAscii(this)">Send ASCII</button>
-        <button class="btn-remove" onclick="removeField('${fieldDiv.id}')" title="Remove field">×</button>
+        <button class="btn-remove" onclick="removeField('${fieldDiv.id}','ascii')" title="Remove field">×</button>
+        <button class="btn-add" onclick="addAsciiField()" title="Add ASCII field">+</button>
     `;
 
-    container.appendChild(fieldDiv);
+    lastRow.insertAdjacentElement('afterend', fieldDiv);
 
     // Setup input handling for the new field
     const input = fieldDiv.querySelector('.ascii-input-dynamic');
@@ -216,12 +235,15 @@ function addAsciiField() {
     input.focus();
 }
 
-// Remove a dynamic field
-function removeField(fieldId) {
+// Remove a dynamic field, keeping at least one field of each type
+function removeField(fieldId, type) {
+    const rows = getFieldRows(type);
+    if (rows.length <= 1) return; // always keep at least one field of this type
+
     const field = document.getElementById(fieldId);
-    if (field) {
-        field.remove();
-    }
+    if (!field) return;
+
+    field.remove();
 }
 
 async function toggleConnection(){
@@ -716,8 +738,7 @@ function clearTerminal() {
     }
 }
 
-function exportLog() {
-    const activeTab = document.getElementById('hexTerminal').classList.contains('active') ? 'hex' : 'ascii';
+function buildLogText(activeTab) {
     // Use full log arrays instead of DOM for export
     const entries = activeTab === 'hex' ? fullHexLog : fullAsciiLog;
     let log = '';
@@ -729,6 +750,13 @@ function exportLog() {
         log += `[${timestamp}] ${direction}: ${data}\n`;
     });
 
+    return log;
+}
+
+function exportLog() {
+    const activeTab = document.getElementById('hexTerminal').classList.contains('active') ? 'hex' : 'ascii';
+    const log = buildLogText(activeTab);
+
     const blob = new Blob([log], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -736,6 +764,41 @@ function exportLog() {
     a.download = `uart-log-${activeTab}-${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.txt`;
     a.click();
     URL.revokeObjectURL(url);
+}
+
+async function copyLog() {
+    const activeTab = document.getElementById('hexTerminal').classList.contains('active') ? 'hex' : 'ascii';
+    const log = buildLogText(activeTab);
+    const btn = document.getElementById('copyLogBtn');
+
+    const showFeedback = (text) => {
+        if (!btn) return;
+        const original = btn.textContent;
+        btn.textContent = text;
+        setTimeout(() => { btn.textContent = original; }, 1500);
+    };
+
+    try {
+        await navigator.clipboard.writeText(log);
+        showFeedback('Copied!');
+    } catch (err) {
+        console.error('Copy failed:', err);
+        // Fallback for browsers/contexts without Clipboard API access
+        try {
+            const textarea = document.createElement('textarea');
+            textarea.value = log;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showFeedback('Copied!');
+        } catch (fallbackErr) {
+            console.error('Fallback copy failed:', fallbackErr);
+            showFeedback('Copy failed');
+        }
+    }
 }
 
 // Cleanup on page unload
